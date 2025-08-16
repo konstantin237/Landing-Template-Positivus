@@ -30,6 +30,9 @@ class ImageOptimizer:
         
         # Режим сохранения информации
         self.save_mode = None
+        
+        # Сохранять ли хэш в data-image-hash атрибут
+        self.save_hash_in_attribute = False
 
     def get_image_hash(self, image_path: str) -> str:
         """Создает хэш для пути изображения."""
@@ -291,8 +294,8 @@ class ImageOptimizer:
                 # Начинаем новый тег
                 new_tag = f'<img{before_src}src="{new_src}"{after_src}'
                 
-                # Добавляем data-hash атрибут для связи с JSON
-                if self.should_save_json():
+                # Добавляем data-hash атрибут для связи с JSON (если выбрано)
+                if self.should_save_json() and self.save_hash_in_attribute:
                     image_hash = optimal_info['json_data']['hash']
                     new_tag += f'\n{attr_indent}data-image-hash="{image_hash}"'
                 
@@ -421,8 +424,8 @@ class ImageOptimizer:
                                     # Добавляем атрибуты перед закрывающей скобкой
                                     attrs_to_add = []
                                     
-                                    # Добавляем data-hash атрибут для связи с JSON
-                                    if self.should_save_json():
+                                    # Добавляем data-hash атрибут для связи с JSON (если выбрано)
+                                    if self.should_save_json() and self.save_hash_in_attribute:
                                         image_hash = optimal_info['json_data']['hash']
                                         attrs_to_add.append(('data-image-hash', image_hash))
                                     
@@ -646,6 +649,48 @@ class ImageOptimizer:
                 print("\n❌ Операция прервана пользователем")
                 sys.exit(0)
 
+    def get_hash_attribute_choice(self) -> bool:
+        """Показывает меню выбора сохранения хэша в data-image-hash атрибут."""
+        if not self.should_save_json():
+            return False  # Если JSON не используется, хэш не нужен
+            
+        print("\n" + "="*60)
+        print("🏷️  СОХРАНЕНИЕ ХЭША В DATA-АТРИБУТ")
+        print("="*60)
+        print("Добавлять ли data-image-hash атрибут для связи с JSON?")
+        print("")
+        print("✅ ПЛЮСЫ сохранения хэша в атрибут:")
+        print("   • Быстрый поиск данных в JSON без вычислений")
+        print("   • Надежность при изменении src")
+        print("   • Удобство в JavaScript")
+        print("")
+        print("❌ МИНУСЫ сохранения хэша в атрибут:")
+        print("   • Увеличение размера HTML")
+        print("   • Избыточность (хэш можно вычислить от пути)")
+        print("   • Дополнительная синхронизация")
+        print("="*60)
+        print("1. Да, добавлять data-image-hash атрибут")
+        print("2. Нет, вычислять хэш в JavaScript по пути")
+        print("="*60)
+        
+        while True:
+            try:
+                choice = input("Ваш выбор (1-2): ").strip()
+                
+                if choice == '1':
+                    print("✅ Хэш будет сохранен в data-image-hash атрибут")
+                    return True
+                elif choice == '2':
+                    print("✅ Хэш будет вычисляться в JavaScript по пути изображения")
+                    return False
+                else:
+                    print("❌ Неверный выбор! Введите 1 или 2")
+                    continue
+                    
+            except KeyboardInterrupt:
+                print("\n❌ Операция прервана пользователем")
+                sys.exit(0)
+
     def run(self):
         """Запускает процесс оптимизации."""
         print("🚀 Скрипт оптимизации изображений")
@@ -657,6 +702,9 @@ class ImageOptimizer:
         # Получаем выбор способа сохранения информации
         self.save_mode = self.get_save_mode_choice()
         
+        # Получаем выбор по сохранению хэша в атрибут
+        self.save_hash_in_attribute = self.get_hash_attribute_choice()
+        
         print(f"\n🎯 Выбранные расширения: {', '.join(selected_extensions)}")
         print(f"💾 Режим сохранения: {self.save_mode}")
         
@@ -666,6 +714,12 @@ class ImageOptimizer:
             print("   → Информация будет сохранена в JSON-файле")
         else:  # both
             print("   → Информация будет сохранена в data-атрибутах И JSON-файле")
+            
+        if self.should_save_json():
+            if self.save_hash_in_attribute:
+                print("🏷️  Хэш будет сохранен в data-image-hash атрибут")
+            else:
+                print("🏷️  Хэш будет вычисляться в JavaScript по пути")
         
         # Находим все файлы для обработки в папке dev
         dev_folder = self.project_root / 'dev'
