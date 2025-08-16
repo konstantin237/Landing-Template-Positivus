@@ -41,27 +41,7 @@
       </div>
     </div>
     <div class="header">
-      <div class="header__inner container"><a class="header__logo logo" href="/"><img class="logo__img" src="assets/img/1_header/logo.svg" alt="positivus" width="220" height="36" loading="lazy"></a>
-      
-      <img src="assets/img/1_header/avif/1.avif" data-avif-src="assets/img/1_header/avif/1.avif" 
-      data-webp-src="assets/img/1_header/webp/1.webp" 
-      data-avif-priority="1" data-webp-priority="2" 
-      data-webp-src="assets\img\1_header\avif\webp\1.webp"
-      data-avif-src="assets\img\1_header\avif\avif\1.avif" 
-      data-avif-priority="1" data-webp-priority="2" 
-      data-webp-src="assets\img\1_header\avif\webp\1.webp" 
-      data-avif-src="assets\img\1_header\avif\avif\1.avif"
-       data-avif-priority="1" data-webp-priority="2" 
-       data-webp-src="assets\img\1_header\avif\webp\1.webp" data-avif-src="assets\img\1_header\avif\avif\1.avif" 
-       data-avif-priority="1" data-webp-priority="2" data-webp-src="assets\img\1_header\avif\webp\1.webp" 
-       data-avif-src="assets\img\1_header\avif\avif\1.avif" data-avif-priority="1" data-webp-priority="2" 
-       data-webp-src="assets\img\1_header\avif\webp\1.webp" data-avif-src="assets\img\1_header\avif\avif\1.avif" 
-       data-avif-priority="1" data-webp-priority="2" data-webp-src="assets\img\1_header\avif\webp\1.webp" 
-       data-avif-src="assets\img\1_header\avif\avif\1.avif" data-avif-priority="1" data-webp-priority="2" 
-       data-webp-src="assets\img\1_header\avif\webp\1.webp" data-avif-src="assets\img\1_header\avif\avif\1.avif" data-avif-priority="1" 
-       data-webp-priority="2">
-
-       
+      <div class="header__inner container"><a class="header__logo logo" href="/"><img class="logo__img" src="assets/img/1_header/logo.svg" alt="positivus" width="220" height="36" loading="lazy"></a><img src="assets/img/1_header/avif/1.avif" data-webp-src="assets/img/1_header/webp/1.webp" data-avif-src="assets/img/1_header/avif/1.avif" data-avif-priority="1" data-webp-priority="2">
         <nav class="header__menu hidden-mobile">
           <ul class="header__menu-list"> 
             <li class="header__menu-item"> <a class="header__menu-link" href="/">About us</a></li>

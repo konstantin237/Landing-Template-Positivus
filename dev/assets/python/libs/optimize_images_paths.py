@@ -99,8 +99,9 @@ class ImageOptimizer:
             parent = path_parts.parent
             stem = path_parts.stem
             
-            potential_webp = str(parent / 'webp' / f'{stem}.webp')
-            potential_avif = str(parent / 'avif' / f'{stem}.avif')
+            # ИСПРАВЛЕНИЕ: правильно создаем пути, используя прямые слэши
+            potential_webp = str(parent / 'webp' / f'{stem}.webp').replace('\\', '/')
+            potential_avif = str(parent / 'avif' / f'{stem}.avif').replace('\\', '/')
             
             # Добавляем пути независимо от существования файлов
             result['data_attributes']['data-webp-src'] = potential_webp
@@ -146,7 +147,7 @@ class ImageOptimizer:
             
             original_content = content
             
-            # Паттерн для поиска img тегов
+            # Паттерн для поиска img тегов (включая уже обработанные с data-атрибутами)
             img_pattern = r'<img([^>]*?)src=["\']([^"\']+\.(jpg|jpeg|png|gif|webp|avif|bmp|tiff))["\']([^>]*?)>'
             
             def replace_img(match):
@@ -161,6 +162,12 @@ class ImageOptimizer:
                 if image_path.lower().endswith('.svg'):
                     return match.group(0)
                 
+                # Проверяем, если тег уже обработан (содержит data-webp-src или data-avif-src)
+                full_tag = match.group(0)
+                if 'data-webp-src=' in full_tag or 'data-avif-src=' in full_tag:
+                    print(f"  ⚪ Уже обработан, пропускаем")
+                    return match.group(0)
+                
                 variants = self.find_image_variants(image_path)
                 if not variants:
                     return match.group(0)
@@ -169,12 +176,18 @@ class ImageOptimizer:
                 if not optimal_info:
                     return match.group(0)
                 
+                # Удаляем существующие data-атрибуты из before_src и after_src на всякий случай
+                before_src = re.sub(r'\s+data-(webp|avif)-(src|priority)=["\'][^"\']*["\']', '', before_src)
+                after_src = re.sub(r'\s+data-(webp|avif)-(src|priority)=["\'][^"\']*["\']', '', after_src)
+                
                 # Создаем новый тег
                 new_src = optimal_info['main_src']
                 data_attrs = ''
                 
                 for attr_name, attr_value in optimal_info.get('data_attributes', {}).items():
-                    data_attrs += f' {attr_name}="{attr_value}"'
+                    # Исправляем слэши на прямые
+                    attr_value_fixed = attr_value.replace('\\', '/')
+                    data_attrs += f' {attr_name}="{attr_value_fixed}"'
                 
                 new_tag = f'<img{before_src}src="{new_src}"{after_src}{data_attrs}>'
                 print(f"  ✅ Заменен на: {new_tag}")
@@ -188,7 +201,7 @@ class ImageOptimizer:
                 return True
             
             return False
-            
+        
         except Exception as e:
             print(f"❌ Ошибка при обработке {file_path}: {e}")
             return False
