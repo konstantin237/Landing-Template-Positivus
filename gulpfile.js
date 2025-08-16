@@ -156,25 +156,19 @@ gulp.task("gcmq", function () {
 });
 
 gulp.task("to-webp", () => {
-  // './dev/img/**/*.{png,gif,jpg}' - все файлы в img и все файлы в подпапках в img
-
-  return gulp.src('./dev/assets/img/**/*.{png,gif,jpg}')
+  // Добавляем поддержку расширений в верхнем регистре
+  return gulp.src('./dev/assets/img/**/*.{png,gif,jpg,PNG,GIF,JPG,jpeg,JPEG}')
     .pipe(webp())
     .pipe(rename({ prefix: 'webp/' }))
     .pipe(gulp.dest('./dev/assets/img'));
-
-  return;
 });
 
 gulp.task("to-avif", () => {
-  // './dev/img/**/*.{png,gif,jpg}' - все файлы в img и все файлы в подпапках в img
-
-  return gulp.src('./dev/assets/img/**/*.{png,gif,jpg}')
+  // Добавляем поддержку расширений в верхнем регистре
+  return gulp.src('./dev/assets/img/**/*.{png,gif,jpg,PNG,GIF,JPG,jpeg,JPEG}')
     .pipe(avif())
     .pipe(rename({ prefix: 'avif/' }))
     .pipe(gulp.dest('./dev/assets/img'));
-
-  return;
 });
 
 
@@ -257,6 +251,7 @@ gulp.task("export", function () {
 });
 
 
+// Также нужно обновить watch задачу для отслеживания файлов с расширениями в верхнем регистре
 gulp.task("watch", function () {
   gulp.watch("dev/assets/pug_blocks/**", gulp.series(
     "pug_to_html",
@@ -271,7 +266,8 @@ gulp.task("watch", function () {
   ));
 
   gulp.watch("dev/assets/scss/**/*.scss", gulp.series("scss"));
-  gulp.watch("dev/assets/img/**/*.{png,gif,jpg}", gulp.series("to-webp", "to-avif"));
+  // Обновленный паттерн для отслеживания изображений с любым регистром расширений
+  gulp.watch("dev/assets/img/**/*.{png,gif,jpg,PNG,GIF,JPG,jpeg,JPEG}", gulp.series("to-webp", "to-avif"));
   gulp.watch("dev/assets/img/**/*", gulp.series("copy-images"));
   gulp.watch("dev/assets/fonts/**", gulp.series("copy-fonts"));
   gulp.watch("dev/audio/**/*", gulp.series("copy-audio-folder"));
