@@ -3,7 +3,7 @@
 """
 Скрипт для оптимизации путей к изображениям в проекте.
 Автоматически выбирает наиболее легкий формат изображения (original/webp/avif)
-и обновляет пути в файлах html, pug, php, scss.
+и обновляет пути в файлах html, pug, php, scss, css.
 """
 
 import os
@@ -180,17 +180,30 @@ class ImageOptimizer:
                 before_src = re.sub(r'\s+data-(webp|avif)-(src|priority)=["\'][^"\']*["\']', '', before_src)
                 after_src = re.sub(r'\s+data-(webp|avif)-(src|priority)=["\'][^"\']*["\']', '', after_src)
                 
-                # Создаем новый тег
+                # Создаем новый тег с переносами строк и отступами
                 new_src = optimal_info['main_src']
-                data_attrs = ''
                 
+                # Определяем базовый отступ (количество пробелов перед <img)
+                # Находим начало строки с img тегом
+                lines_before = content[:match.start()].split('\n')
+                current_line = lines_before[-1] if lines_before else ''
+                base_indent = len(current_line) - len(current_line.lstrip()) if current_line.strip() == '' else 0
+                
+                # Добавляем отступ для атрибутов (базовый + 4 пробела)
+                attr_indent = ' ' * (base_indent + 4)
+                
+                # Начинаем новый тег
+                new_tag = f'<img{before_src}src="{new_src}"{after_src}'
+                
+                # Добавляем data-атрибуты каждый с новой строки
                 for attr_name, attr_value in optimal_info.get('data_attributes', {}).items():
                     # Исправляем слэши на прямые
                     attr_value_fixed = attr_value.replace('\\', '/')
-                    data_attrs += f' {attr_name}="{attr_value_fixed}"'
+                    new_tag += f'\n{attr_indent}{attr_name}="{attr_value_fixed}"'
                 
-                new_tag = f'<img{before_src}src="{new_src}"{after_src}{data_attrs}>'
-                print(f"  ✅ Заменен на: {new_tag}")
+                new_tag += '>'
+                
+                print(f"  ✅ Заменен на многострочный формат")
                 return new_tag
             
             content = re.sub(img_pattern, replace_img, content, flags=re.IGNORECASE)
@@ -201,7 +214,7 @@ class ImageOptimizer:
                 return True
             
             return False
-        
+            
         except Exception as e:
             print(f"❌ Ошибка при обработке {file_path}: {e}")
             return False
@@ -320,21 +333,21 @@ class ImageOptimizer:
             print(f"❌ Ошибка при обработке {file_path}: {e}")
             return False
 
-    def process_scss_file(self, file_path: Path) -> bool:
-        """Обрабатывает SCSS файлы."""
+    def process_scss_css_file(self, file_path: Path) -> bool:
+        """Обрабатывает SCSS/CSS файлы."""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
             original_content = content
             
-            # Паттерн для поиска url() в SCSS
+            # Паттерн для поиска url() в SCSS/CSS
             url_pattern = r'url\(["\']?([^"\'()]+\.(jpg|jpeg|png|gif|webp|avif|bmp|tiff))["\']?\)'
             
             def replace_url(match):
                 image_path = match.group(1)
                 
-                print(f"  🖼️ Найден SCSS url: {image_path}")
+                print(f"  🖼️ Найден SCSS/CSS url: {image_path}")
                 
                 # Пропускаем SVG
                 if image_path.lower().endswith('.svg'):
@@ -376,22 +389,84 @@ class ImageOptimizer:
             return self.process_html_php_file(file_path)
         elif file_extension == '.pug':
             return self.process_pug_file(file_path)
-        elif file_extension in ['.scss', '.sass']:
-            return self.process_scss_file(file_path)
+        elif file_extension in ['.scss', '.sass', '.css']:
+            return self.process_scss_css_file(file_path)
         
         return False
 
+    def get_user_choice(self) -> List[str]:
+        """Показывает меню и возвращает список расширений для обработки."""
+        print("\n" + "="*60)
+        print("🎯 МЕНЮ ВЫБОРА РЕЖИМА ОБРАБОТКИ")
+        print("="*60)
+        print("1. Обработать все файлы (pug, scss, html, css, php)")
+        print("2. Только препроцессоры (pug, scss)")
+        print("3. Только постобработка (html, php, css)")
+        print("4. Выбрать файлы вручную")
+        print("="*60)
+        
+        while True:
+            try:
+                choice = input("Выберите режим (1-4): ").strip()
+                
+                if choice == '1':
+                    return ['.pug', '.scss', '.sass', '.html', '.htm', '.php', '.css']
+                elif choice == '2':
+                    return ['.pug', '.scss', '.sass']
+                elif choice == '3':
+                    return ['.html', '.htm', '.php', '.css']
+                elif choice == '4':
+                    print("\n📝 Введите расширения файлов через запятую (например: html, scss, pug)")
+                    print("Доступные расширения: html, htm, php, pug, scss, sass, css")
+                    
+                    user_input = input("Расширения: ").strip()
+                    if not user_input:
+                        print("❌ Не введены расширения!")
+                        continue
+                    
+                    # Парсим ввод пользователя
+                    extensions = []
+                    for ext in user_input.split(','):
+                        ext = ext.strip().lower()
+                        # Добавляем точку если её нет
+                        if not ext.startswith('.'):
+                            ext = '.' + ext
+                        
+                        # Проверяем что расширение поддерживается
+                        if ext in ['.html', '.htm', '.php', '.pug', '.scss', '.sass', '.css']:
+                            extensions.append(ext)
+                        else:
+                            print(f"⚠️ Неподдерживаемое расширение: {ext}")
+                    
+                    if extensions:
+                        return extensions
+                    else:
+                        print("❌ Не найдено поддерживаемых расширений!")
+                        continue
+                else:
+                    print("❌ Неверный выбор! Введите 1, 2, 3 или 4")
+                    continue
+                    
+            except KeyboardInterrupt:
+                print("\n❌ Операция прервана пользователем")
+                sys.exit(0)
+
     def run(self):
         """Запускает процесс оптимизации."""
-        print("🚀 Запуск оптимизации изображений...")
+        print("🚀 Скрипт оптимизации изображений")
         print(f"📁 Корневая папка проекта: {self.project_root}")
+        
+        # Получаем выбор пользователя
+        selected_extensions = self.get_user_choice()
+        
+        print(f"\n🎯 Выбранные расширения: {', '.join(selected_extensions)}")
         
         # Находим все файлы для обработки в папке dev
         dev_folder = self.project_root / 'dev'
-        file_patterns = ['**/*.html', '**/*.htm', '**/*.php', '**/*.pug', '**/*.scss', '**/*.sass']
         files_to_process = []
         
-        for pattern in file_patterns:
+        for extension in selected_extensions:
+            pattern = f'**/*{extension}'
             files_to_process.extend(dev_folder.glob(pattern))
         
         # Исключаем файлы из папки prod
@@ -402,6 +477,7 @@ class ImageOptimizer:
             return
         
         print(f"📄 Найдено файлов для обработки: {len(files_to_process)}")
+        print("="*60)
         
         updated_files = 0
         for file_path in files_to_process:
@@ -411,7 +487,8 @@ class ImageOptimizer:
             else:
                 print(f"⚪ Без изменений: {file_path.relative_to(self.project_root / 'dev')}")
         
-        print(f"\n✨ Завершено! Обновлено файлов: {updated_files} из {len(files_to_process)}")
+        print("="*60)
+        print(f"✨ Завершено! Обновлено файлов: {updated_files} из {len(files_to_process)}")
 
 
 def main():
