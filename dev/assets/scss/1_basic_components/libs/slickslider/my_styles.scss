@@ -1,0 +1,36 @@
+//это кнопки вперёд назад. В них фон, а стрелочка указана символом в псевдоэлементе before
+.slick-prev,
+.slick-next {
+    height: 70px;
+    width: 70px;
+    z-index: 3;
+
+
+    //сама стрелочка сделана символом, поэтому меняю font-size
+    &:before {
+        font-size: 5rem;
+        color: #000;
+    }
+}
+
+//это стили для каждой точки
+.slick-dots li {
+    $h: 50px;
+    $w: 50px;
+
+    height: $h;
+    width: $w;
+
+    button {
+        height: $h;
+        width: $w;
+
+        //сама точка тоже сделана символом, поэтому меняю font-size
+        &:before {
+            height: $h;
+            width: $w;
+
+            font-size: 5rem;
+        }
+    }
+}

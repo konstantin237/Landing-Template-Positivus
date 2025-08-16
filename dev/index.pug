@@ -1,0 +1,74 @@
+doctype html
+html(lang='ru' class='no-webp')
+    head
+        meta(charset='utf-8')
+        meta(name='viewport', content='width=device-width, initial-scale=1')
+        link(rel='stylesheet', href='assets/css/first_styles.min.css', media="none", onload="media='all'")
+        link(rel='stylesheet', href='assets/css/1_basic_components/reset_css.min.css', media="none", onload="media='all'")
+        link(rel='shortcut icon' href='assets/img/favicon.svg' type='image/x-icon')
+
+        
+        title Positivus
+        
+        style.
+            body  {margin:0}.preloader {position:fixed;left:0;top:0;right:0;bottom:0;background:#111;z-index:1001;}.preloader__row{position:relative;top:50%;left:50%;width:70px;height:70px;margin-top:-35px;margin-left:-35px;text-align:center;animation:preloader-rotate 1s infinite linear;}.preloader__item{position:absolute;display:inline-block;top:0;background-color:#00c2d0;border-radius:100%;width:35px;height:35px;animation:preloader-bounce 1s infinite ease-in-out}.preloader__item:last-child{top:auto;bottom:0;animation-delay:-1s}@keyframes preloader-rotate{100%{transform:rotate(360deg);}} @keyframes preloader-bounce{0%,100%{transform:scale(0);}50%{transform:scale(1)}} .loaded_hiding .preloader{transition:0.3s opacity;opacity:0}.loaded .preloader{display:none}
+      
+        // Демонстрационный скрипт оптимизации изображений
+        script(src="assets/js/libs/image-optimization/demo-image-optimization.js")
+
+        // Подключение системы оптимизации изображений
+        script(src="assets/js/libs/image-optimization/image-format-selector.js" type="module")
+        script(src="assets/js/libs/image-optimization/image-optimization-integration.js" type="module")
+
+        // Подключение скрипта определения форматов изображений
+        script(src="assets/js/libs/image-optimization/image-format-detector.js" type="module")
+        
+        
+        script(src='assets/js/first_script.js' type='module')
+
+        script(async='').
+            window.onload = function() {
+            document.body.classList.add('loaded_hiding');
+            window.setTimeout(function() {
+            document.body.classList.add('loaded');
+            document.body.classList.remove('loaded_hiding');
+            }, 500);
+            }
+            
+
+    body
+        
+        include assets/pug_blocks/1_basic_components/preloader.pug
+    
+        //-блоки с цифрами - это блоки именно этого лендинга      
+        include assets/pug_blocks/2_site_sections/1_header.pug
+
+        include assets/pug_blocks/1_basic_components/dialog.pug
+
+        //-блоки без цифр - максимально универсальные
+        script(src='assets/js/1_basic_components/jquery/jquery.min.js')
+
+        //-imask работает и без jquery
+        script(src='https://unpkg.com/imask@6.4.2/dist/imask.js')
+        
+        //-slickslider основан на jquery
+        script(src='assets/js/1_basic_components/slickslider/slick.min.js')
+
+        script(src='assets/js/map.js' type='module')
+
+        script(src='assets/js/second_script.js' type='module')
+
+        script(async).
+            function appendToHead(a,c){
+                if("css"==a)
+                {var b=document.createElement("link");
+                b.rel="stylesheet",
+                b.href=c,document.head.appendChild(b)
+                }
+                if("js"==a||"javascript"==a){
+                    var d=document.createElement("script");
+                    d.src=c,document.head.appendChild(d)}
+                }
+
+            appendToHead('css', 'assets/css/second_styles.min.css');
+        script

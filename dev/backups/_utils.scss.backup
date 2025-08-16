@@ -1,0 +1,39 @@
+@import 
+  "libs/normalize",
+  "fonts", 
+  "mixins",
+  "media_queries/media",
+  "variables";
+
+.container {
+    max-width: calc(var(--container-width) + var(container-padding-x) * 2 ); // Ограничивает максимальную ширину контейнера с учетом внутренних отступов
+    margin-inline: auto; // Центрирует контейнер по горизонтали
+    padding-inline: var(--container-padding-x); // Добавляет горизонтальные внутренние отступы
+}
+
+.visually-hidden {
+    position: absolute !important; 
+    width: 1px !important; // Минимальная ширина для скрытия
+    height: 1px !important; // Минимальная высота для скрытия
+    margin: -1px !important; // Сдвигает элемент за пределы видимой области
+    border: 0 !important; // Убирает границу
+    padding: 0 !important; // Убирает внутренние отступы
+    white-space: nowrap !important; // Запрещает перенос строк
+    clip-path: inset(100%) !important; // Обрезает содержимое полностью
+    clip: rect(0 0 0 0) !important; // Альтернативный способ полностью обрезать содержимое (для поддержки старых браузеров)
+    overflow: hidden !important; // Скрывает все выходящее за пределы содержимое
+}
+
+// скроет на мобилках
+.hidden-mobile {
+    @include mobile {
+        display: none !important;
+    }
+}
+
+// отобразит на мобилках, скроет на планшетах и десктопах
+.visible-mobile {
+    @include mobile-above {
+        display: none !important;
+    }
+}

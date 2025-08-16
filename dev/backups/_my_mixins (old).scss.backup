@@ -1,0 +1,426 @@
+
+
+
+@mixin gradient($direction, $list) {
+  background: -webkit-linear-gradient($direction, $list);
+  background: -moz-linear-gradient($direction, $list);
+  background: -o-linear-gradient($direction, $list);
+  background: linear-gradient($direction, $list);
+}
+
+
+@mixin colors($defaultColor: #fff, $visitColor: #c8c8c8, $hoverColor: #aaa, $activeColor: #c8c8c8) {
+  color: $defaultColor;
+
+  &:visited {
+    color: $visitColor;
+  }
+
+  &:hover {
+    color: $hoverColor;
+  }
+
+  &:active {
+    color: $activeColor;
+  }
+}
+
+/* создаёт псевдоэлемент*/
+@mixin pseudo($display: block, $pos: absolute, $content: '') {
+  content: $content;
+  display: $display;
+  position: $pos;
+
+  /* Пример:
+        div::after {
+        @include pseudo;
+        top: -1rem; left: -1rem;
+        width: 1rem; height: 1rem;
+        }
+    */
+}
+
+/* 
+Мы используем этот миксин для создания масштабируемых 
+элементов(обычно изображения/картинки заднего фона), 
+чтобы поддерживать соотношение.
+*/
+@mixin responsive-ratio($x, $y, $pseudo: false) {
+  $padding: unquote(($y / $x) * 100 + '%');
+
+  @if $pseudo {
+    &:before {
+      @include pseudo($pos: relative);
+      width: 100%;
+      padding-top: $padding;
+    }
+  }
+
+  @else {
+    padding-top: $padding;
+  }
+
+
+  /* 
+    Например, вы можете написать код ниже и ваш блок будет иметь соотношение, 
+    которое обычно используется в видео.
+
+        div {
+        @include responsive-ratio(16,9);
+        }
+    */
+}
+
+/* CSS треугольники */
+@mixin css-triangle($color: #fff, $direction: 'down', $size: 6px, $position: absolute, $round: false) {
+  @include pseudo($pos: $position);
+  width: 0;
+  height: 0;
+
+  @if $round {
+    border-radius: 3px;
+  }
+
+  @if $direction==down {
+    border-left: $size solid transparent;
+    border-right: $size solid transparent;
+    border-top: $size solid $color;
+    margin-top: 0 - round($size / 2.5);
+  }
+
+  @else if $direction==up {
+    border-left: $size solid transparent;
+    border-right: $size solid transparent;
+    border-bottom: $size solid $color;
+    margin-bottom: 0 - round($size / 2.5);
+  }
+
+  @else if $direction==right {
+    border-top: $size solid transparent;
+    border-bottom: $size solid transparent;
+    border-left: $size solid $color;
+    margin-right: -$size;
+  }
+
+  @else if $direction==left {
+    border-top: $size solid transparent;
+    border-bottom: $size solid transparent;
+    border-right: $size solid $color;
+    margin-left: -$size;
+  }
+}
+
+/* Абсолютное центрирование*/
+@mixin absCenter($top: 0, $left: 0, $right: 0, $bottom: 0) {
+  position: absolute;
+  top: $top;
+  left: $left;
+  right: $right;
+  bottom: $bottom;
+  margin: auto;
+}
+
+@mixin сentering-xy() {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@mixin сentering-x() {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@mixin сentering-y() {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Стилизация плейсхолдера для элементов ввода больше не составит большого труда: */
+@mixin placeholder($color, $size, $weight) {
+  &::-webkit-input-placeholder {
+    @if $color {
+      color: $color;
+    }
+
+    @if $size {
+      font-size: $size;
+    }
+
+    @if $weight {
+      font-weight: $weight;
+    }
+  }
+
+  &:-moz-placeholder {
+    @if $color {
+      color: $color;
+    }
+
+    @if $size {
+      font-size: $size;
+    }
+
+    @if $weight {
+      font-weight: $weight;
+    }
+  }
+
+  &::-moz-placeholder {
+    @if $color {
+      color: $color;
+    }
+
+    @if $size {
+      font-size: $size;
+    }
+
+    @if $weight {
+      font-weight: $weight;
+    }
+  }
+
+  &:-ms-input-placeholder {
+    @if $color {
+      color: $color;
+    }
+
+    @if $size {
+      font-size: $size;
+    }
+
+    @if $weight {
+      font-weight: $weight;
+    }
+  }
+}
+
+
+
+
+
+
+
+/* Стилизация чекбоксов и радио*/
+
+/* PUG-структура чекбоксов и ражио
+div
+  input#cb3(type='checkbox' class='customCheckbox')
+  label(for='cb3') Флажок 3
+  
+div
+  input#rb1(type='radio' name='rb' checked='' class='customRadio')
+  label(for='rb1') Радио 1
+*/
+@mixin checkbox($borderColor: #dddddd, $bgColor: #ffffff,
+  $borderRadius: 2px, $checkColor: #f00, $deg: -45deg) {
+
+  & {
+
+
+    /* 
+Перенесем стандартное отображение элементов 
+за область видимости и добавим отступы к соседствующим меткам:
+*/
+    &:checked,
+    &:not(:checked) {
+      position: absolute;
+      left: -9999px;
+    }
+
+    &:checked+label,
+    &:not(:checked)+label {
+      display: inline-block;
+      position: relative;
+      padding-left: 28px;
+      line-height: 20px;
+      cursor: pointer;
+    }
+
+    /*
+    Перед метками добавим стилизованные контейнеры для наших пользовательских 
+    элементов. Для флажков это будут квадраты с немного 
+    закругленными для красоты краями, а для переключателей — просто небольшие круги:
+    */
+
+    &:checked+label:before,
+    &:not(:checked)+label:before {
+      content: "";
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      width: 18px;
+      height: 18px;
+      border: 1px solid $borderColor;
+      background-color: $bgColor;
+    }
+
+    &:checked+label:before,
+    &:not(:checked)+label:before {
+      border-radius: $borderRadius;
+    }
+
+    /* 
+    Теперь добавим индикаторы выбора. Для флажков это будут 
+    галки, для переключателей — заполненные цветом круги 
+    меньшего размера, чем сам контейнер. Для большего эффекта 
+    зададим также небольшую анимацию:
+    */
+
+    &:checked+label:after,
+    &:not(:checked)+label:after {
+      content: "";
+      position: absolute;
+      -webkit-transition: all 0.2s ease;
+      -moz-transition: all 0.2s ease;
+      -o-transition: all 0.2s ease;
+      transition: all 0.2s ease;
+    }
+
+    &:checked+label:after,
+    &:not(:checked)+label:after {
+      left: 3px;
+      top: 4px;
+      width: 10px;
+      height: 5px;
+      border-radius: 1px;
+      border-left: 4px solid $checkColor;
+      border-bottom: 4px solid $checkColor;
+      -webkit-transform: rotate($deg);
+      -moz-transform: rotate($deg);
+      -o-transform: rotate($deg);
+      -ms-transform: rotate($deg);
+      transform: rotate($deg);
+    }
+
+    /*
+    Осталось скрыть индикаторы выбора, когда элемент не выбран, 
+    и, соответственно, отображать их, когда элемент находится в выбранном состоянии:
+    */
+
+    &:not(:checked)+label:after {
+      opacity: 0;
+    }
+
+    &:checked+label:after {
+      opacity: 1;
+    }
+  }
+}
+
+@mixin radio($borderColor: #dddddd, $bgColor: #ffffff,
+  $borderRadius: 100%, $checkColor: #f00) {
+
+  & {
+
+    /* 
+Перенесем стандартное отображение элементов 
+за область видимости и добавим отступы к соседствующим меткам:
+*/
+
+    &:checked,
+    &:not(:checked) {
+      position: absolute;
+      left: -9999px;
+    }
+
+    &:checked+label,
+    &:not(:checked)+label {
+      display: inline-block;
+      position: relative;
+      padding-left: 28px;
+      line-height: 20px;
+      cursor: pointer;
+    }
+
+
+    &:checked+label:before,
+    &:not(:checked)+label:before {
+      content: "";
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      width: 18px;
+      height: 18px;
+      border: 1px solid $borderColor;
+      background-color: #ffffff;
+    }
+
+    &:checked+label:before,
+    &:not(:checked)+label:before {
+      border-radius: $borderRadius;
+    }
+
+
+    &:checked+label:after,
+    &:not(:checked)+label:after {
+      content: "";
+      position: absolute;
+      -webkit-transition: all 0.2s ease;
+      -moz-transition: all 0.2s ease;
+      -o-transition: all 0.2s ease;
+      transition: all 0.2s ease;
+    }
+
+    &:checked+label:after,
+    &:not(:checked)+label:after {
+      left: 5px;
+      top: 5px;
+      width: 10px;
+      height: 10px;
+      border-radius: $borderRadius;
+      background-color: $checkColor;
+    }
+
+    &:not(:checked)+label:after {
+      opacity: 0;
+    }
+
+    &:checked+label:after {
+      opacity: 1;
+    }
+  }
+}
+
+
+.customCheckbox {
+  /* Пример: @include checkbox($borderRadius: 100px, $deg: -145deg); 
+  Можно вот так отправлять аргументы не по порядку.
+  */
+  @include checkbox();
+
+}
+
+.customRadio {
+  /* Пример: @include radio($borderRadius: 2px, $checkColor: #0f0);
+  Можно вот так отправлять аргументы не по порядку.
+  */
+
+  @include radio();
+}
+
+//контейнер с управляемой шириной
+
+$break_sm: 780px;
+
+
+@mixin sm-block() {
+  @media screen and (max-width: $break_sm) {
+    @content;
+  }
+}
+
+@mixin myWrapper($maxWidth: 90%, $fields: 30px, $fields_sm: 15px) {
+  max-width: $maxWidth;
+  margin: 0 auto;
+  padding-left: $fields;
+  padding-right: $fields;
+
+  @include sm-block() {
+    padding-left: $fields_sm;
+    padding-right: $fields_sm;
+  }
+}

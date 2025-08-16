@@ -1,0 +1,8 @@
+
+mixin slider(sliderClass, imgsDir)
+    div(class=sliderClass)
+        //-слайдер с LazyLoad нормально не работает
+        img(class=sliderClass+'__img' src=imgsDir+'1.webp' alt='')
+        //-Контент 1 слайда
+        img(class=sliderClass+'__img' src=imgsDir+'3.webp' alt='')
+        //-Контент 2 слайда

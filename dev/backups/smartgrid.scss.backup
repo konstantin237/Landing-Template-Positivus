@@ -1,0 +1,1131 @@
+$columns: 12;
+$atom: (
+    calc(100% / $columns)
+);
+
+$maxWidthWrapper: 100%;
+
+/* default breakpoints*/
+/*
+$break_lg: 1100px;
+$break_md: 960px;
+$break_sm: 780px;
+$break_xs: 560px; 
+*/ 
+
+/* devices */
+$break_nestHubMax: 1280px;
+$break_nestHubMax_Height: 800px;
+
+$break_lg: 1100px;
+
+$break_iPadPro: 1024px;
+$break_iPadPro_Height: 1366px;
+
+$break_nestHub: 1024px;
+$break_nestHub_Height: 600px;
+
+$break_md: 960px;
+
+$break_sm: 780px;
+
+$break_iPad: 768px;
+$break_iPad_Height: 1024px;
+
+$break_xs: 560px;
+
+$break_surfaceDUO: 540px;
+$break_surfaceDUO_Height: 720px;
+
+$break_iPhone678Plus: 414px;
+$break_iPhone678Plus_Height: 736px;
+
+$break_pixel2XL: 411px;
+$break_pixel2XL_Height: 823px;
+
+$break_pixel2: 411px;
+$break_pixel2_Height: 731px;
+
+$break_iPhoneX: 375px;
+$break_iPhoneX_Height: 812px;
+
+$break_iPhone678: 375px;
+$break_iPhone678_Height: 667px;
+
+$break_galaxyS5: 360px;
+$break_galaxyS5_Height: 640px;
+
+$break_iPhone5SE: 320px;
+$break_iPhone5SE_Height: 568px;
+
+$break_galaxyFold: 280px;
+$break_galaxyFold_Height: 653px;
+
+
+
+
+$offset: 1.5%;
+$offset_nestHubMax: $offset;
+$offset_lg: $offset;
+$offset_iPadPro: $offset;
+$offset_nestHub: $offset;
+$offset_md: $offset;
+$offset_sm: $offset;
+$offset_iPad: $offset;
+$offset_xs: $offset;
+$offset_surfaceDUO: $offset;
+$offset_iPhone678Plus: $offset;
+$offset_pixel2XL: $offset;
+$offset_pixel2: $offset;
+$offset_iPhoneX: $offset;
+$offset_iPhone678: $offset;
+$offset_galaxyS5: $offset;
+$offset_iPhone5SE: $offset;
+$offset_galaxyFold: $offset;
+
+$offset_one_side: (
+   calc($offset / 2)
+);
+$offset_nestHubMax_one_side: (
+    calc($offset_nestHubMax / 2)
+);
+$offset_lg_one_side: (
+    calc($offset_lg / 2)
+);
+$offset_iPadPro_one_side: (
+    calc($offset_iPadPro / 2)
+);
+$offset_nestHub_one_side: (
+    calc($offset_nestHub / 2)
+);
+$offset_md_one_side: (
+    calc($offset_md / 2)
+);
+$offset_sm_one_side: (
+    calc($offset_sm / 2)
+);
+$offset_iPad_one_side: (
+    calc($offset_iPad / 2)
+);
+$offset_xs_one_side: (
+    calc($offset_xs / 2)
+);
+$offset_surfaceDUO_one_side: (
+    calc($offset_surfaceDUO / 2)
+);
+$offset_iPhone678Plus_one_side: (
+    calc($offset_iPhone678Plus / 2)
+);
+$offset_pixel2XL_one_side: (
+    calc($offset_pixel2XL / 2)
+);
+$offset_pixel2_one_side: (
+    calc($offset_pixel2 / 2)
+);
+$offset_iPhoneX_one_side: (
+    calc($offset_iPhoneX / 2)
+);
+$offset_iPhone678_one_side: (
+    calc($offset_iPhone678 / 2)
+);
+$offset_galaxyS5_one_side: (
+    calc($offset_galaxyS5 / 2)
+);
+$offset_iPhone5SE_one_side: (
+    calc($offset_iPhone5SE / 2)
+);
+$offset_galaxyFold_one_side: (
+    calc($offset_galaxyFold / 2)
+);
+
+$fields: 30px;
+$fields_sm: 15px;
+
+@mixin wrapper-full() {
+    padding-left: $fields;
+    padding-right: $fields;
+
+    @include sm-block() {
+        padding-left: $fields_sm;
+        padding-right: $fields_sm;
+    }
+}
+
+@mixin row-offsets() {
+    margin-left: ($offset_one_side * -1);
+    margin-right: ($offset_one_side * -1);
+}
+
+@mixin col-offsets($type) {
+    #{$type}-left: $offset_one_side;
+    #{$type}-right: $offset_one_side;
+}
+
+@mixin wrapper() {
+    max-width: $maxWidthWrapper;
+    margin: 0 auto;
+    @include wrapper-full();
+}
+
+@mixin row-flex() {
+    display: flex;
+    flex-wrap: wrap;
+    @include row-offsets();
+}
+
+@mixin row-float() {
+    @include row-offsets();
+    @include clearfix();
+}
+
+@mixin row-ib() {
+    @include row-offsets();
+}
+
+@mixin col() {
+    box-sizing: border-box;
+    word-wrap: break-word;
+    @include col-offsets(margin);
+}
+
+@mixin col-float() {
+    float: left;
+}
+
+@mixin col-ib() {
+    display: inline-block;
+    vertical-align: top;
+}
+
+@mixin col-padding() {
+    word-wrap: break-word;
+    @include col-offsets(padding);
+}
+
+@mixin size($n) {
+    width: $atom * $n - $offset;
+}
+
+@mixin size-nestHubMax($n) {
+    @include nestHubMax(width, $atom * $n - $offset_nestHubMax);
+}
+
+@mixin size-lg($n) {
+    @include lg(width, $atom * $n - $offset_lg);
+}
+
+@mixin size-iPadPro($n) {
+    @include iPadPro(width, $atom * $n - $offset_iPadPro);
+}
+
+@mixin size-nestHub($n) {
+    @include nestHub(width, $atom * $n - $offset_nestHub);
+}
+
+@mixin size-md($n) {
+    @include md(width, $atom * $n - $offset_md);
+}
+
+@mixin size-sm($n) {
+    @include sm(width, $atom * $n - $offset_sm);
+}
+
+@mixin size-iPad($n) {
+    @include iPad(width, $atom * $n - $offset_iPad);
+}
+
+@mixin size-xs($n) {
+    @include xs(width, $atom * $n - $offset_xs);
+}
+
+@mixin size-surfaceDUO($n) {
+    @include surfaceDUO(width, $atom * $n - $offset_surfaceDUO);
+}
+
+@mixin size-iPhone678Plus($n) {
+    @include iPhone678Plus(width, $atom * $n - $offset_iPhone678Plus);
+}
+
+@mixin size-pixel2XL($n) {
+    @include pixel2XL(width, $atom * $n - $offset_pixel2XL);
+}
+
+@mixin size-pixel2($n) {
+    @include pixel2(width, $atom * $n - $offset_pixel2);
+}
+
+@mixin size-iPhoneX($n) {
+    @include iPhoneX(width, $atom * $n - $offset_iPhoneX);
+}
+
+@mixin size-iPhone678($n) {
+    @include iPhone678(width, $atom * $n - $offset_iPhone678);
+}
+
+@mixin size-galaxyS5($n) {
+    @include galaxyS5(width, $atom * $n - $offset_galaxyS5);
+}
+
+@mixin size-iPhone5SE($n) {
+    @include iPhone5SE(width, $atom * $n - $offset_iPhone5SE);
+}
+
+@mixin size-galaxyFold($n) {
+    @include galaxyFold(width, $atom * $n - $offset_galaxyFold);
+}
+
+@mixin shift($n) {
+    margin-left: $atom * $n + $offset_one_side;
+    margin-right: $atom * $n + $offset_one_side;
+}
+
+@mixin shift-left($n) {
+    margin-left: $atom * $n + $offset_one_side;
+}
+
+@mixin shift-right($n) {
+    margin-right: $atom * $n + $offset_one_side;
+}
+
+@mixin shift-padding($n) {
+    padding-left: $atom * $n + $offset_one_side;
+    padding-right: $atom * $n + $offset_one_side;
+}
+
+@mixin shift-padding-left($n) {
+    padding-left: $atom * $n + $offset_one_side;
+}
+
+@mixin shift-padding-right($n) {
+    padding-right: $atom * $n + $offset_one_side;
+}
+
+@mixin shift-nestHubMax($n) {
+    @include nestHubMax(margin-left, $atom * $n + $offset_nestHubMax_one_side);
+    @include nestHubMax(margin-right, $atom * $n + $offset_nestHubMax_one_side);
+}
+
+@mixin shift-nestHubMax-left($n) {
+    @include nestHubMax(margin-left, $atom * $n + $offset_nestHubMax_one_side);
+}
+
+@mixin shift-nestHubMax-right($n) {
+    @include nestHubMax(margin-right, $atom * $n + $offset_nestHubMax_one_side);
+}
+
+@mixin shift-nestHubMax-padding($n) {
+    @include nestHubMax(padding-left, $atom * $n + $offset_nestHubMax_one_side);
+    @include nestHubMax(padding-right, $atom * $n + $offset_nestHubMax_one_side);
+}
+
+@mixin shift-nestHubMax-padding-left($n) {
+    @include nestHubMax(padding-left, $atom * $n + $offset_nestHubMax_one_side);
+}
+
+@mixin shift-nestHubMax-padding-right($n) {
+    @include nestHubMax(padding-right, $atom * $n + $offset_nestHubMax_one_side);
+}
+
+@mixin shift-lg($n) {
+    @include lg(margin-left, $atom * $n + $offset_lg_one_side);
+    @include lg(margin-right, $atom * $n + $offset_lg_one_side);
+}
+
+@mixin shift-lg-left($n) {
+    @include lg(margin-left, $atom * $n + $offset_lg_one_side);
+}
+
+@mixin shift-lg-right($n) {
+    @include lg(margin-right, $atom * $n + $offset_lg_one_side);
+}
+
+@mixin shift-lg-padding($n) {
+    @include lg(padding-left, $atom * $n + $offset_lg_one_side);
+    @include lg(padding-right, $atom * $n + $offset_lg_one_side);
+}
+
+@mixin shift-lg-padding-left($n) {
+    @include lg(padding-left, $atom * $n + $offset_lg_one_side);
+}
+
+@mixin shift-lg-padding-right($n) {
+    @include lg(padding-right, $atom * $n + $offset_lg_one_side);
+}
+
+@mixin shift-iPadPro($n) {
+    @include iPadPro(margin-left, $atom * $n + $offset_iPadPro_one_side);
+    @include iPadPro(margin-right, $atom * $n + $offset_iPadPro_one_side);
+}
+
+@mixin shift-iPadPro-left($n) {
+    @include iPadPro(margin-left, $atom * $n + $offset_iPadPro_one_side);
+}
+
+@mixin shift-iPadPro-right($n) {
+    @include iPadPro(margin-right, $atom * $n + $offset_iPadPro_one_side);
+}
+
+@mixin shift-iPadPro-padding($n) {
+    @include iPadPro(padding-left, $atom * $n + $offset_iPadPro_one_side);
+    @include iPadPro(padding-right, $atom * $n + $offset_iPadPro_one_side);
+}
+
+@mixin shift-iPadPro-padding-left($n) {
+    @include iPadPro(padding-left, $atom * $n + $offset_iPadPro_one_side);
+}
+
+@mixin shift-iPadPro-padding-right($n) {
+    @include iPadPro(padding-right, $atom * $n + $offset_iPadPro_one_side);
+}
+
+@mixin shift-nestHub($n) {
+    @include nestHub(margin-left, $atom * $n + $offset_nestHub_one_side);
+    @include nestHub(margin-right, $atom * $n + $offset_nestHub_one_side);
+}
+
+@mixin shift-nestHub-left($n) {
+    @include nestHub(margin-left, $atom * $n + $offset_nestHub_one_side);
+}
+
+@mixin shift-nestHub-right($n) {
+    @include nestHub(margin-right, $atom * $n + $offset_nestHub_one_side);
+}
+
+@mixin shift-nestHub-padding($n) {
+    @include nestHub(padding-left, $atom * $n + $offset_nestHub_one_side);
+    @include nestHub(padding-right, $atom * $n + $offset_nestHub_one_side);
+}
+
+@mixin shift-nestHub-padding-left($n) {
+    @include nestHub(padding-left, $atom * $n + $offset_nestHub_one_side);
+}
+
+@mixin shift-nestHub-padding-right($n) {
+    @include nestHub(padding-right, $atom * $n + $offset_nestHub_one_side);
+}
+
+@mixin shift-md($n) {
+    @include md(margin-left, $atom * $n + $offset_md_one_side);
+    @include md(margin-right, $atom * $n + $offset_md_one_side);
+}
+
+@mixin shift-md-left($n) {
+    @include md(margin-left, $atom * $n + $offset_md_one_side);
+}
+
+@mixin shift-md-right($n) {
+    @include md(margin-right, $atom * $n + $offset_md_one_side);
+}
+
+@mixin shift-md-padding($n) {
+    @include md(padding-left, $atom * $n + $offset_md_one_side);
+    @include md(padding-right, $atom * $n + $offset_md_one_side);
+}
+
+@mixin shift-md-padding-left($n) {
+    @include md(padding-left, $atom * $n + $offset_md_one_side);
+}
+
+@mixin shift-md-padding-right($n) {
+    @include md(padding-right, $atom * $n + $offset_md_one_side);
+}
+
+@mixin shift-sm($n) {
+    @include sm(margin-left, $atom * $n + $offset_sm_one_side);
+    @include sm(margin-right, $atom * $n + $offset_sm_one_side);
+}
+
+@mixin shift-sm-left($n) {
+    @include sm(margin-left, $atom * $n + $offset_sm_one_side);
+}
+
+@mixin shift-sm-right($n) {
+    @include sm(margin-right, $atom * $n + $offset_sm_one_side);
+}
+
+@mixin shift-sm-padding($n) {
+    @include sm(padding-left, $atom * $n + $offset_sm_one_side);
+    @include sm(padding-right, $atom * $n + $offset_sm_one_side);
+}
+
+@mixin shift-sm-padding-left($n) {
+    @include sm(padding-left, $atom * $n + $offset_sm_one_side);
+}
+
+@mixin shift-sm-padding-right($n) {
+    @include sm(padding-right, $atom * $n + $offset_sm_one_side);
+}
+
+@mixin shift-iPad($n) {
+    @include iPad(margin-left, $atom * $n + $offset_iPad_one_side);
+    @include iPad(margin-right, $atom * $n + $offset_iPad_one_side);
+}
+
+@mixin shift-iPad-left($n) {
+    @include iPad(margin-left, $atom * $n + $offset_iPad_one_side);
+}
+
+@mixin shift-iPad-right($n) {
+    @include iPad(margin-right, $atom * $n + $offset_iPad_one_side);
+}
+
+@mixin shift-iPad-padding($n) {
+    @include iPad(padding-left, $atom * $n + $offset_iPad_one_side);
+    @include iPad(padding-right, $atom * $n + $offset_iPad_one_side);
+}
+
+@mixin shift-iPad-padding-left($n) {
+    @include iPad(padding-left, $atom * $n + $offset_iPad_one_side);
+}
+
+@mixin shift-iPad-padding-right($n) {
+    @include iPad(padding-right, $atom * $n + $offset_iPad_one_side);
+}
+
+@mixin shift-xs($n) {
+    @include xs(margin-left, $atom * $n + $offset_xs_one_side);
+    @include xs(margin-right, $atom * $n + $offset_xs_one_side);
+}
+
+@mixin shift-xs-left($n) {
+    @include xs(margin-left, $atom * $n + $offset_xs_one_side);
+}
+
+@mixin shift-xs-right($n) {
+    @include xs(margin-right, $atom * $n + $offset_xs_one_side);
+}
+
+@mixin shift-xs-padding($n) {
+    @include xs(padding-left, $atom * $n + $offset_xs_one_side);
+    @include xs(padding-right, $atom * $n + $offset_xs_one_side);
+}
+
+@mixin shift-xs-padding-left($n) {
+    @include xs(padding-left, $atom * $n + $offset_xs_one_side);
+}
+
+@mixin shift-xs-padding-right($n) {
+    @include xs(padding-right, $atom * $n + $offset_xs_one_side);
+}
+
+@mixin shift-surfaceDUO($n) {
+    @include surfaceDUO(margin-left, $atom * $n + $offset_surfaceDUO_one_side);
+    @include surfaceDUO(margin-right, $atom * $n + $offset_surfaceDUO_one_side);
+}
+
+@mixin shift-surfaceDUO-left($n) {
+    @include surfaceDUO(margin-left, $atom * $n + $offset_surfaceDUO_one_side);
+}
+
+@mixin shift-surfaceDUO-right($n) {
+    @include surfaceDUO(margin-right, $atom * $n + $offset_surfaceDUO_one_side);
+}
+
+@mixin shift-surfaceDUO-padding($n) {
+    @include surfaceDUO(padding-left, $atom * $n + $offset_surfaceDUO_one_side);
+    @include surfaceDUO(padding-right, $atom * $n + $offset_surfaceDUO_one_side);
+}
+
+@mixin shift-surfaceDUO-padding-left($n) {
+    @include surfaceDUO(padding-left, $atom * $n + $offset_surfaceDUO_one_side);
+}
+
+@mixin shift-surfaceDUO-padding-right($n) {
+    @include surfaceDUO(padding-right, $atom * $n + $offset_surfaceDUO_one_side);
+}
+
+@mixin shift-iPhone678Plus($n) {
+    @include iPhone678Plus(margin-left, $atom * $n + $offset_iPhone678Plus_one_side);
+    @include iPhone678Plus(margin-right, $atom * $n + $offset_iPhone678Plus_one_side);
+}
+
+@mixin shift-iPhone678Plus-left($n) {
+    @include iPhone678Plus(margin-left, $atom * $n + $offset_iPhone678Plus_one_side);
+}
+
+@mixin shift-iPhone678Plus-right($n) {
+    @include iPhone678Plus(margin-right, $atom * $n + $offset_iPhone678Plus_one_side);
+}
+
+@mixin shift-iPhone678Plus-padding($n) {
+    @include iPhone678Plus(padding-left, $atom * $n + $offset_iPhone678Plus_one_side);
+    @include iPhone678Plus(padding-right, $atom * $n + $offset_iPhone678Plus_one_side);
+}
+
+@mixin shift-iPhone678Plus-padding-left($n) {
+    @include iPhone678Plus(padding-left, $atom * $n + $offset_iPhone678Plus_one_side);
+}
+
+@mixin shift-iPhone678Plus-padding-right($n) {
+    @include iPhone678Plus(padding-right, $atom * $n + $offset_iPhone678Plus_one_side);
+}
+
+@mixin shift-pixel2XL($n) {
+    @include pixel2XL(margin-left, $atom * $n + $offset_pixel2XL_one_side);
+    @include pixel2XL(margin-right, $atom * $n + $offset_pixel2XL_one_side);
+}
+
+@mixin shift-pixel2XL-left($n) {
+    @include pixel2XL(margin-left, $atom * $n + $offset_pixel2XL_one_side);
+}
+
+@mixin shift-pixel2XL-right($n) {
+    @include pixel2XL(margin-right, $atom * $n + $offset_pixel2XL_one_side);
+}
+
+@mixin shift-pixel2XL-padding($n) {
+    @include pixel2XL(padding-left, $atom * $n + $offset_pixel2XL_one_side);
+    @include pixel2XL(padding-right, $atom * $n + $offset_pixel2XL_one_side);
+}
+
+@mixin shift-pixel2XL-padding-left($n) {
+    @include pixel2XL(padding-left, $atom * $n + $offset_pixel2XL_one_side);
+}
+
+@mixin shift-pixel2XL-padding-right($n) {
+    @include pixel2XL(padding-right, $atom * $n + $offset_pixel2XL_one_side);
+}
+
+@mixin shift-pixel2($n) {
+    @include pixel2(margin-left, $atom * $n + $offset_pixel2_one_side);
+    @include pixel2(margin-right, $atom * $n + $offset_pixel2_one_side);
+}
+
+@mixin shift-pixel2-left($n) {
+    @include pixel2(margin-left, $atom * $n + $offset_pixel2_one_side);
+}
+
+@mixin shift-pixel2-right($n) {
+    @include pixel2(margin-right, $atom * $n + $offset_pixel2_one_side);
+}
+
+@mixin shift-pixel2-padding($n) {
+    @include pixel2(padding-left, $atom * $n + $offset_pixel2_one_side);
+    @include pixel2(padding-right, $atom * $n + $offset_pixel2_one_side);
+}
+
+@mixin shift-pixel2-padding-left($n) {
+    @include pixel2(padding-left, $atom * $n + $offset_pixel2_one_side);
+}
+
+@mixin shift-pixel2-padding-right($n) {
+    @include pixel2(padding-right, $atom * $n + $offset_pixel2_one_side);
+}
+
+@mixin shift-iPhoneX($n) {
+    @include iPhoneX(margin-left, $atom * $n + $offset_iPhoneX_one_side);
+    @include iPhoneX(margin-right, $atom * $n + $offset_iPhoneX_one_side);
+}
+
+@mixin shift-iPhoneX-left($n) {
+    @include iPhoneX(margin-left, $atom * $n + $offset_iPhoneX_one_side);
+}
+
+@mixin shift-iPhoneX-right($n) {
+    @include iPhoneX(margin-right, $atom * $n + $offset_iPhoneX_one_side);
+}
+
+@mixin shift-iPhoneX-padding($n) {
+    @include iPhoneX(padding-left, $atom * $n + $offset_iPhoneX_one_side);
+    @include iPhoneX(padding-right, $atom * $n + $offset_iPhoneX_one_side);
+}
+
+@mixin shift-iPhoneX-padding-left($n) {
+    @include iPhoneX(padding-left, $atom * $n + $offset_iPhoneX_one_side);
+}
+
+@mixin shift-iPhoneX-padding-right($n) {
+    @include iPhoneX(padding-right, $atom * $n + $offset_iPhoneX_one_side);
+}
+
+@mixin shift-iPhone678($n) {
+    @include iPhone678(margin-left, $atom * $n + $offset_iPhone678_one_side);
+    @include iPhone678(margin-right, $atom * $n + $offset_iPhone678_one_side);
+}
+
+@mixin shift-iPhone678-left($n) {
+    @include iPhone678(margin-left, $atom * $n + $offset_iPhone678_one_side);
+}
+
+@mixin shift-iPhone678-right($n) {
+    @include iPhone678(margin-right, $atom * $n + $offset_iPhone678_one_side);
+}
+
+@mixin shift-iPhone678-padding($n) {
+    @include iPhone678(padding-left, $atom * $n + $offset_iPhone678_one_side);
+    @include iPhone678(padding-right, $atom * $n + $offset_iPhone678_one_side);
+}
+
+@mixin shift-iPhone678-padding-left($n) {
+    @include iPhone678(padding-left, $atom * $n + $offset_iPhone678_one_side);
+}
+
+@mixin shift-iPhone678-padding-right($n) {
+    @include iPhone678(padding-right, $atom * $n + $offset_iPhone678_one_side);
+}
+
+@mixin shift-galaxyS5($n) {
+    @include galaxyS5(margin-left, $atom * $n + $offset_galaxyS5_one_side);
+    @include galaxyS5(margin-right, $atom * $n + $offset_galaxyS5_one_side);
+}
+
+@mixin shift-galaxyS5-left($n) {
+    @include galaxyS5(margin-left, $atom * $n + $offset_galaxyS5_one_side);
+}
+
+@mixin shift-galaxyS5-right($n) {
+    @include galaxyS5(margin-right, $atom * $n + $offset_galaxyS5_one_side);
+}
+
+@mixin shift-galaxyS5-padding($n) {
+    @include galaxyS5(padding-left, $atom * $n + $offset_galaxyS5_one_side);
+    @include galaxyS5(padding-right, $atom * $n + $offset_galaxyS5_one_side);
+}
+
+@mixin shift-galaxyS5-padding-left($n) {
+    @include galaxyS5(padding-left, $atom * $n + $offset_galaxyS5_one_side);
+}
+
+@mixin shift-galaxyS5-padding-right($n) {
+    @include galaxyS5(padding-right, $atom * $n + $offset_galaxyS5_one_side);
+}
+
+@mixin shift-iPhone5SE($n) {
+    @include iPhone5SE(margin-left, $atom * $n + $offset_iPhone5SE_one_side);
+    @include iPhone5SE(margin-right, $atom * $n + $offset_iPhone5SE_one_side);
+}
+
+@mixin shift-iPhone5SE-left($n) {
+    @include iPhone5SE(margin-left, $atom * $n + $offset_iPhone5SE_one_side);
+}
+
+@mixin shift-iPhone5SE-right($n) {
+    @include iPhone5SE(margin-right, $atom * $n + $offset_iPhone5SE_one_side);
+}
+
+@mixin shift-iPhone5SE-padding($n) {
+    @include iPhone5SE(padding-left, $atom * $n + $offset_iPhone5SE_one_side);
+    @include iPhone5SE(padding-right, $atom * $n + $offset_iPhone5SE_one_side);
+}
+
+@mixin shift-iPhone5SE-padding-left($n) {
+    @include iPhone5SE(padding-left, $atom * $n + $offset_iPhone5SE_one_side);
+}
+
+@mixin shift-iPhone5SE-padding-right($n) {
+    @include iPhone5SE(padding-right, $atom * $n + $offset_iPhone5SE_one_side);
+}
+
+@mixin shift-galaxyFold($n) {
+    @include galaxyFold(margin-left, $atom * $n + $offset_galaxyFold_one_side);
+    @include galaxyFold(margin-right, $atom * $n + $offset_galaxyFold_one_side);
+}
+
+@mixin shift-galaxyFold-left($n) {
+    @include galaxyFold(margin-left, $atom * $n + $offset_galaxyFold_one_side);
+}
+
+@mixin shift-galaxyFold-right($n) {
+    @include galaxyFold(margin-right, $atom * $n + $offset_galaxyFold_one_side);
+}
+
+@mixin shift-galaxyFold-padding($n) {
+    @include galaxyFold(padding-left, $atom * $n + $offset_galaxyFold_one_side);
+    @include galaxyFold(padding-right, $atom * $n + $offset_galaxyFold_one_side);
+}
+
+@mixin shift-galaxyFold-padding-left($n) {
+    @include galaxyFold(padding-left, $atom * $n + $offset_galaxyFold_one_side);
+}
+
+@mixin shift-galaxyFold-padding-right($n) {
+    @include galaxyFold(padding-right, $atom * $n + $offset_galaxyFold_one_side);
+}
+
+@mixin nestHubMax($name, $value) {
+    @media screen and (max-width: $break_nestHubMax) and (max-height: $break_nestHubMax_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin nestHubMax-block() {
+    @media screen and (max-width: $break_nestHubMax) and (max-height: $break_nestHubMax_Height) {
+        @content;
+    }
+}
+
+@mixin lg($name, $value) {
+    @media screen and (max-width: $break_lg) {
+        #{$name}: $value;
+    }
+}
+
+@mixin lg-block() {
+    @media screen and (max-width: $break_lg) {
+        @content;
+    }
+}
+
+@mixin iPadPro($name, $value) {
+    @media screen and (max-width: $break_iPadPro) and (max-height: $break_iPadPro_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin iPadPro-block() {
+    @media screen and (max-width: $break_iPadPro) and (max-height: $break_iPadPro_Height) {
+        @content;
+    }
+}
+
+@mixin nestHub($name, $value) {
+    @media screen and (max-width: $break_nestHub) and (max-height: $break_nestHub_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin nestHub-block() {
+    @media screen and (max-width: $break_nestHub) and (max-height: $break_nestHub_Height) {
+        @content;
+    }
+}
+
+@mixin md($name, $value) {
+    @media screen and (max-width: $break_md) {
+        #{$name}: $value;
+    }
+}
+
+@mixin md-block() {
+    @media screen and (max-width: $break_md) {
+        @content;
+    }
+}
+
+@mixin sm($name, $value) {
+    @media screen and (max-width: $break_sm) {
+        #{$name}: $value;
+    }
+}
+
+@mixin sm-block() {
+    @media screen and (max-width: $break_sm) {
+        @content;
+    }
+}
+
+@mixin iPad($name, $value) {
+    @media screen and (max-width: $break_iPad) and (max-height: $break_iPad_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin iPad-block() {
+    @media screen and (max-width: $break_iPad) and (max-height: $break_iPad_Height) {
+        @content;
+    }
+}
+
+@mixin xs($name, $value) {
+    @media screen and (max-width: $break_xs) {
+        #{$name}: $value;
+    }
+}
+
+@mixin xs-block() {
+    @media screen and (max-width: $break_xs) {
+        @content;
+    }
+}
+
+@mixin surfaceDUO($name, $value) {
+    @media screen and (max-width: $break_surfaceDUO) and (max-height: $break_surfaceDUO_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin surfaceDUO-block() {
+    @media screen and (max-width: $break_surfaceDUO) and (max-height: $break_surfaceDUO_Height) {
+        @content;
+    }
+}
+
+@mixin iPhone678Plus($name, $value) {
+    @media screen and (max-width: $break_iPhone678Plus) and (max-height: $break_iPhone678Plus_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin iPhone678Plus-block() {
+    @media screen and (max-width: $break_iPhone678Plus) and (max-height: $break_iPhone678Plus_Height) {
+        @content;
+    }
+}
+
+@mixin pixel2XL($name, $value) {
+    @media screen and (max-width: $break_pixel2XL) and (max-height: $break_pixel2XL_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin pixel2XL-block() {
+    @media screen and (max-width: $break_pixel2XL) and (max-height: $break_pixel2XL_Height) {
+        @content;
+    }
+}
+
+@mixin pixel2($name, $value) {
+    @media screen and (max-width: $break_pixel2) and (max-height: $break_pixel2_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin pixel2-block() {
+    @media screen and (max-width: $break_pixel2) and (max-height: $break_pixel2_Height) {
+        @content;
+    }
+}
+
+@mixin iPhoneX($name, $value) {
+    @media screen and (max-width: $break_iPhoneX) and (max-height: $break_iPhoneX_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin iPhoneX-block() {
+    @media screen and (max-width: $break_iPhoneX) and (max-height: $break_iPhoneX_Height) {
+        @content;
+    }
+}
+
+@mixin iPhone678($name, $value) {
+    @media screen and (max-width: $break_iPhone678) and (max-height: $break_iPhone678_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin iPhone678-block() {
+    @media screen and (max-width: $break_iPhone678) and (max-height: $break_iPhone678_Height) {
+        @content;
+    }
+}
+
+@mixin galaxyS5($name, $value) {
+    @media screen and (max-width: $break_galaxyS5) and (max-height: $break_galaxyS5_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin galaxyS5-block() {
+    @media screen and (max-width: $break_galaxyS5) and (max-height: $break_galaxyS5_Height) {
+        @content;
+    }
+}
+
+@mixin iPhone5SE($name, $value) {
+    @media screen and (max-width: $break_iPhone5SE) and (max-height: $break_iPhone5SE_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin iPhone5SE-block() {
+    @media screen and (max-width: $break_iPhone5SE) and (max-height: $break_iPhone5SE_Height) {
+        @content;
+    }
+}
+
+@mixin galaxyFold($name, $value) {
+    @media screen and (max-width: $break_galaxyFold) and (max-height: $break_galaxyFold_Height) {
+        #{$name}: $value;
+    }
+}
+
+@mixin galaxyFold-block() {
+    @media screen and (max-width: $break_galaxyFold) and (max-height: $break_galaxyFold_Height) {
+        @content;
+    }
+}
+
+@mixin from($min_width) {
+    @media screen and (min-width: $min_width) {
+        @content;
+    }
+}
+
+@mixin to($max_width) {
+    @media screen and (max-width: $max_width) {
+        @content;
+    }
+}
+
+@mixin from-to($min_width, $max_width) {
+    @media screen and (min-width: $min_width) and (max-width: $max_width) {
+        @content;
+    }
+}
+
+@mixin u-row-flex($offset) {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: ($offset / -2);
+    margin-right: ($offset / -2);
+}
+
+@mixin u-col($offset) {
+    box-sizing: border-box;
+    word-wrap: break-word;
+    margin-left: ($offset / 2);
+    margin-right: ($offset / 2);
+}
+
+@mixin u-size($n, $columns, $offset) {
+    width: #{calc(100% / #{$columns} * #{$n} - #{$offset})
+}
+
+;
+}
+
+@mixin reset() {
+
+    body,
+    div,
+    dl,
+    dt,
+    dd,
+    ul,
+    li,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    pre,
+    code,
+    form,
+    fieldset,
+    input,
+    textarea,
+    p,
+    blockquote,
+    th,
+    td {
+        margin: 0;
+        padding: 0;
+    }
+
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+
+    fieldset,
+    img,
+    abbr {
+        border: 0;
+    }
+
+    address,
+    caption,
+    cite,
+    code,
+    dfn,
+    em,
+    strong,
+    th,
+    var {
+        font-style: normal;
+        font-weight: normal;
+    }
+
+    ul li {
+        list-style: none;
+    }
+
+    caption,
+    th {
+        text-align: left;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-size: 100%;
+        font-weight: normal;
+    }
+
+    sup {
+        vertical-align: text-top;
+    }
+
+    sub {
+        vertical-align: text-bottom;
+    }
+
+    input,
+    textarea,
+    select {
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+    }
+
+    legend {
+        color: #000;
+    }
+
+    article,
+    aside,
+    details,
+    figcaption,
+    figure,
+    footer,
+    header,
+    hgroup,
+    menu,
+    nav,
+    section,
+    main {
+        display: block;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+@mixin debug($background, $outline) {
+    height: 100vh;
+    position: fixed;
+    width: 100%;
+
+    >div {
+        height: inherit;
+        @include wrapper();
+
+        >div {
+            height: inherit;
+            @include row-flex();
+
+            >div {
+                @include col();
+                @include size(1);
+                height: inherit;
+                outline: $outline;
+                background: $background;
+            }
+        }
+    }
+}
+
+@mixin clearfix() {
+    &::after {
+        display: block;
+        content: "";
+        clear: both;
+    }
+}

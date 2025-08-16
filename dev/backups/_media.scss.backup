@@ -1,0 +1,74 @@
+$desktop-above: 1281px;
+$desktop: 1280px;
+
+$tablet-above: 1024px;
+$tablet: 1023px;
+
+$mobile-above: 768px;
+$mobile: 767px;
+
+@mixin desktop-above{
+    @media (min-width: $desktop-above){
+        @content;
+    }
+}
+
+@mixin desktop{
+    @media (max-width: $desktop){
+        @content;
+    }
+}
+
+
+
+@mixin tablet-above{
+    @media (min-width: $tablet-above){
+        @content;
+    }
+}
+@mixin tablet{
+    @media (max-width: $tablet){
+        @content;
+    }
+}
+
+
+@mixin mobile-above{
+    @media (min-width: $mobile-above){
+        @content;
+    }
+}
+
+@mixin mobile{
+    @media (max-width: $mobile){
+        @content;
+    }
+}
+
+
+// миксин нужен для того, чтобы обработать наведение корректно на ПК и телефонах?
+// если пользователь тапнул пальцем по кнопке на телефоне, то она ТЕПЕРЬ не будет зависать в состоянии ховер (и в стилях этого состояния)
+// БЛАГОДАРЯ этому миксину
+@mixin hover {
+    // это для устройств, где клавиатура и мышь
+    @media (hover: hover) {
+        &:hover{
+            @content;
+        }
+    }
+
+    @media (hover: none) {
+        &:active{
+            @content;
+        }
+    }
+}
+
+/* Это пример как использовать.
+button {
+    background-color: lightblue;
+
+    @include hover {
+        background-color: lightcoral; 
+    }
+}*/

@@ -1,0 +1,84 @@
+
+
+.header{
+    padding-top: rem(60);
+
+    // max-width: 1280px
+    @include desktop {
+        padding-top: rem(30);
+    }
+
+    // это внутренний контейнер для лого, меню и кнопки
+    &__inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        column-gap: rem(40);
+
+        @include tablet { column-gap: rem(30); }
+    }
+
+    &__logo{
+        @include tablet { max-width: 120px; }
+
+        @include mobile { max-width: 144px;}
+    }
+
+    &__button{
+        @include tablet { 
+            height: 48px;
+            padding-inline: 18px;
+            font-size: rem(16);
+        }
+    }
+
+    &__menu {
+        margin-left: auto;
+        font-size: rem(20); //20px в rem
+
+        @include desktop{  font-size: rem(18);   }
+
+        @include tablet {  font-size: rem(16); }
+
+        &-list {
+            display: flex;
+            align-items: center;
+            column-gap: rem(40);
+
+            @include desktop{
+                column-gap: rem(20);
+            }
+        }
+
+        &-link{
+            position: relative; //это нужно, чтобы добавить подчеркивание при ховере с помощью pos: absolute
+            display: inline-flex; //инлайне-флекс именно для того, чтобы применилась высота 48px
+            height: rem(48);
+            align-items: center;
+            
+            &::after{
+                content: '';
+                position: absolute;
+                top: 100%; //сместим относительно верхней гарницы ССЫЛКИ на 100%, чтобы чёрточка было ПОД ссылкой (при наведении)
+               
+                // добьемся нужного эффекта, появления подчеркивания из центра линии:
+                translate: -50%; // сдвигаем псевдоэлемент влево на 50% его собственной ширины, чтобы центрировать его относительно ссылки
+    
+                // центрируем этот эффект:
+                left: 50%;
+                width: 0; // изначально линия невидима (ширина 0)
+                height: 2px; // толщина линии
+                background-color: currentColor; //цвет псевдоэлемента after будет такой же, как и значение свойства color у родительского элемента (ССЫЛКИ)
+                transition-duration: inherit; // анимация будет такой же, как у родителя (для плавного появления линии)
+            }
+
+            // миксин hover прописан в 1_basic_components/media_queris/_media.scss
+            // При наведении на ссылку:
+            @include hover {
+                &::after{
+                    width: 100%; // линия расширяется на всю ширину ссылки (анимируется)
+                }
+            }
+        }
+    }
+}

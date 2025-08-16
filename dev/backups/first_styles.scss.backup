@@ -1,0 +1,17 @@
+@import 
+  "../1_basic_components/libs/normalize",
+  "../1_basic_components/fonts", 
+  "../1_basic_components/globals",
+  "../1_basic_components/utils", 
+  "../1_basic_components/variables",
+  "../1_basic_components/mixins";
+
+
+@import 
+  "../1_basic_components/button",
+  "../2_site_sections/_1_header";
+
+/*
+.container {
+    margin: 0px 166px;   
+}*/
