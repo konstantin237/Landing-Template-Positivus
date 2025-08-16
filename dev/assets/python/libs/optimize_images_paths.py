@@ -9,6 +9,8 @@
 import os
 import re
 import sys
+import json
+import hashlib
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 
@@ -22,6 +24,19 @@ class ImageOptimizer:
         
         # Поддерживаемые расширения изображений (кроме svg)
         self.image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif', '.bmp', '.tiff'}
+        
+        # Словарь для хранения информации об изображениях для JSON
+        self.images_data = {}
+        
+        # Режим сохранения информации
+        self.save_mode = None
+
+    def get_image_hash(self, image_path: str) -> str:
+        """Создает хэш для пути изображения."""
+        # Нормализуем путь (убираем ./ и используем прямые слэши)
+        normalized_path = image_path.lstrip('./').replace('\\', '/')
+        # Создаем MD5 хэш от нормализованного пути
+        return hashlib.md5(normalized_path.encode('utf-8')).hexdigest()
 
     def get_file_size(self, file_path: Path) -> int:
         """Получает размер файла в байтах."""
@@ -76,7 +91,7 @@ class ImageOptimizer:
         
         return variants
 
-    def get_optimal_image_info(self, variants: Dict[str, Tuple[str, int]]) -> Dict:
+    def get_optimal_image_info(self, variants: Dict[str, Tuple[str, int]], image_path: str) -> Dict:
         """Определяет оптимальный путь и приоритеты для всех форматов."""
         if not variants:
             return {}
@@ -86,7 +101,8 @@ class ImageOptimizer:
         
         result = {
             'main_src': sorted_variants[0][1][0],  # Самый легкий вариант
-            'data_attributes': {}
+            'data_attributes': {},
+            'json_data': {}
         }
         
         print(f"    📊 Самый легкий: {sorted_variants[0][0]} ({sorted_variants[0][1][1]} байт)")
@@ -139,17 +155,28 @@ class ImageOptimizer:
             # Сортируем форматы: сначала существующие по размеру, потом несуществующие
             all_formats.sort(key=lambda x: (not x['exists'], x['size']))
             
+            # Подготавливаем данные для JSON
+            json_formats = {}
+            
             # Устанавливаем приоритеты и пути для всех форматов
             priority = 1
             for format_info in all_formats:
                 format_name = format_info['name']
                 format_path = format_info['path']
                 
-                # Добавляем src атрибут
+                # Добавляем src атрибут для data-атрибутов
                 result['data_attributes'][f'data-{format_name}-src'] = format_path
                 
-                # Добавляем priority атрибут
+                # Добавляем priority атрибут для data-атрибутов
                 result['data_attributes'][f'data-{format_name}-priority'] = str(priority)
+                
+                # Добавляем в JSON данные
+                json_formats[format_name] = {
+                    'src': format_path,
+                    'priority': priority,
+                    'exists': format_info['exists'],
+                    'size': format_info['size'] if format_info['exists'] else None
+                }
                 
                 if format_info['exists']:
                     print(f"    🏆 {format_name}: приоритет {priority} (размер: {format_info['size']} байт)")
@@ -157,8 +184,49 @@ class ImageOptimizer:
                     print(f"    🔮 {format_name}: приоритет {priority} (потенциальный файл)")
                 
                 priority += 1
+            
+            # Сохраняем данные для JSON файла
+            image_hash = self.get_image_hash(original_path)
+            result['json_data'] = {
+                'hash': image_hash,
+                'original_path': original_path.replace('\\', '/'),
+                'original_ext': original_ext,
+                'optimal_src': result['main_src'].replace('\\', '/'),
+                'formats': json_formats
+            }
+            
+            # Добавляем в общий словарь изображений
+            self.images_data[image_hash] = result['json_data']
         
         return result
+
+    def save_images_json(self):
+        """Сохраняет JSON файл с информацией об изображениях."""
+        if not self.images_data:
+            return
+        
+        json_path = self.project_root / 'dev' / 'assets' / 'img' / 'images_data.json'
+        
+        # Создаем директорию если не существует
+        json_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        try:
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(self.images_data, f, ensure_ascii=False, indent=2)
+            
+            print(f"\n💾 Сохранен JSON файл: {json_path}")
+            print(f"📊 Обработано изображений: {len(self.images_data)}")
+            
+        except Exception as e:
+            print(f"❌ Ошибка при сохранении JSON: {e}")
+
+    def should_add_data_attributes(self) -> bool:
+        """Проверяет нужно ли добавлять data-атрибуты."""
+        return self.save_mode in ['data_attributes', 'both']
+
+    def should_save_json(self) -> bool:
+        """Проверяет нужно ли сохранять JSON."""
+        return self.save_mode in ['json', 'both']
 
     def process_html_php_file(self, file_path: Path) -> bool:
         """Обрабатывает HTML/PHP файлы."""
@@ -185,7 +253,7 @@ class ImageOptimizer:
                 
                 # Проверяем, если тег уже обработан (содержит data-webp-src или data-avif-src)
                 full_tag = match.group(0)
-                if 'data-webp-src=' in full_tag or 'data-avif-src=' in full_tag or 'data-original-src=' in full_tag:
+                if self.should_add_data_attributes() and ('data-webp-src=' in full_tag or 'data-avif-src=' in full_tag or 'data-original-src=' in full_tag):
                     print(f"  ⚪ Уже обработан, пропускаем")
                     return match.group(0)
                 
@@ -193,9 +261,16 @@ class ImageOptimizer:
                 if not variants:
                     return match.group(0)
                 
-                optimal_info = self.get_optimal_image_info(variants)
+                optimal_info = self.get_optimal_image_info(variants, image_path)
                 if not optimal_info:
                     return match.group(0)
+                
+                # Если режим только JSON, просто заменяем src
+                if not self.should_add_data_attributes():
+                    new_src = optimal_info['main_src']
+                    new_tag = match.group(0).replace(image_path, new_src)
+                    print(f"  ✅ Заменен src на оптимальный (режим JSON)")
+                    return new_tag
                 
                 # Удаляем существующие data-атрибуты из before_src и after_src на всякий случай
                 before_src = re.sub(r'\s+data-(webp|avif|original)-(src|priority|ext)=["\'][^"\']*["\']', '', before_src)
@@ -216,31 +291,37 @@ class ImageOptimizer:
                 # Начинаем новый тег
                 new_tag = f'<img{before_src}src="{new_src}"{after_src}'
                 
+                # Добавляем data-hash атрибут для связи с JSON
+                if self.should_save_json():
+                    image_hash = optimal_info['json_data']['hash']
+                    new_tag += f'\n{attr_indent}data-image-hash="{image_hash}"'
+                
                 # Добавляем data-атрибуты каждый с новой строки в правильном порядке
-                data_attrs = optimal_info.get('data_attributes', {})
-                
-                # Сортируем атрибуты по приоритету: сначала по priority, потом по типу
-                def sort_attrs(item):
-                    attr_name, attr_value = item
-                    if '-priority' in attr_name:
-                        # Извлекаем приоритет для сортировки
-                        priority = int(attr_value)
-                        return (priority, 1)  # priority атрибуты идут вторыми
-                    elif '-src' in attr_name:
-                        # Для src атрибутов извлекаем приоритет из соответствующего priority атрибута
-                        format_name = attr_name.replace('data-', '').replace('-src', '')
-                        priority_key = f'data-{format_name}-priority'
-                        priority = int(data_attrs.get(priority_key, '999'))
-                        return (priority, 0)  # src атрибуты идут первыми
-                    else:
-                        return (0, 2)  # остальные атрибуты (например, data-original-ext)
-                
-                sorted_attrs = sorted(data_attrs.items(), key=sort_attrs)
-                
-                for attr_name, attr_value in sorted_attrs:
-                    # Исправляем слэши на прямые
-                    attr_value_fixed = str(attr_value).replace('\\', '/')
-                    new_tag += f'\n{attr_indent}{attr_name}="{attr_value_fixed}"'
+                if self.should_add_data_attributes():
+                    data_attrs = optimal_info.get('data_attributes', {})
+                    
+                    # Сортируем атрибуты по приоритету: сначала по priority, потом по типу
+                    def sort_attrs(item):
+                        attr_name, attr_value = item
+                        if '-priority' in attr_name:
+                            # Извлекаем приоритет для сортировки
+                            priority = int(attr_value)
+                            return (priority, 1)  # priority атрибуты идут вторыми
+                        elif '-src' in attr_name:
+                            # Для src атрибутов извлекаем приоритет из соответствующего priority атрибута
+                            format_name = attr_name.replace('data-', '').replace('-src', '')
+                            priority_key = f'data-{format_name}-priority'
+                            priority = int(data_attrs.get(priority_key, '999'))
+                            return (priority, 0)  # src атрибуты идут первыми
+                        else:
+                            return (0, 2)  # остальные атрибуты (например, data-original-ext)
+                    
+                    sorted_attrs = sorted(data_attrs.items(), key=sort_attrs)
+                    
+                    for attr_name, attr_value in sorted_attrs:
+                        # Исправляем слэши на прямые
+                        attr_value_fixed = str(attr_value).replace('\\', '/')
+                        new_tag += f'\n{attr_indent}{attr_name}="{attr_value_fixed}"'
                 
                 new_tag += '>'
                 
@@ -311,7 +392,7 @@ class ImageOptimizer:
                         
                         # Проверяем, не обработан ли уже блок
                         full_block = '\n'.join(img_block_lines)
-                        if 'data-webp-src=' in full_block or 'data-avif-src=' in full_block or 'data-original-src=' in full_block:
+                        if self.should_add_data_attributes() and ('data-webp-src=' in full_block or 'data-avif-src=' in full_block or 'data-original-src=' in full_block):
                             print(f"  ⚪ Уже обработан, пропускаем")
                             new_lines.extend(img_block_lines)
                             i = img_block_end_index + 1
@@ -321,7 +402,7 @@ class ImageOptimizer:
                         if not image_path.lower().endswith('.svg'):
                             variants = self.find_image_variants(image_path)
                             if variants:
-                                optimal_info = self.get_optimal_image_info(variants)
+                                optimal_info = self.get_optimal_image_info(variants, image_path)
                                 if optimal_info:
                                     # Заменяем src на оптимальный
                                     new_src = optimal_info['main_src']
@@ -330,9 +411,43 @@ class ImageOptimizer:
                                     for k in range(len(img_block_lines)):
                                         img_block_lines[k] = img_block_lines[k].replace(image_path, new_src)
                                     
-                                    # Добавляем data-атрибуты перед закрывающей скобкой
-                                    data_attrs = optimal_info.get('data_attributes', {})
-                                    if data_attrs:
+                                    # Если режим только JSON, не добавляем data-атрибуты
+                                    if not self.should_add_data_attributes() and not self.should_save_json():
+                                        print(f"  ✅ Заменен src на оптимальный (режим без атрибутов)")
+                                        new_lines.extend(img_block_lines)
+                                        i = img_block_end_index + 1
+                                        continue
+                                    
+                                    # Добавляем атрибуты перед закрывающей скобкой
+                                    attrs_to_add = []
+                                    
+                                    # Добавляем data-hash атрибут для связи с JSON
+                                    if self.should_save_json():
+                                        image_hash = optimal_info['json_data']['hash']
+                                        attrs_to_add.append(('data-image-hash', image_hash))
+                                    
+                                    # Добавляем data-атрибуты
+                                    if self.should_add_data_attributes():
+                                        data_attrs = optimal_info.get('data_attributes', {})
+                                        
+                                        # Сортируем атрибуты как в HTML версии
+                                        def sort_attrs(item):
+                                            attr_name, attr_value = item
+                                            if '-priority' in attr_name:
+                                                priority = int(attr_value)
+                                                return (priority, 1)
+                                            elif '-src' in attr_name:
+                                                format_name = attr_name.replace('data-', '').replace('-src', '')
+                                                priority_key = f'data-{format_name}-priority'
+                                                priority = int(data_attrs.get(priority_key, '999'))
+                                                return (priority, 0)
+                                            else:
+                                                return (0, 2)
+                                        
+                                        sorted_attrs = sorted(data_attrs.items(), key=sort_attrs)
+                                        attrs_to_add.extend(sorted_attrs)
+                                    
+                                    if attrs_to_add:
                                         # Находим строку с закрывающей скобкой
                                         for k in range(len(img_block_lines)):
                                             if ')' in img_block_lines[k]:
@@ -343,35 +458,19 @@ class ImageOptimizer:
                                                 # Убираем скобку из строки
                                                 img_block_lines[k] = img_block_lines[k].replace(')', '').rstrip()
                                                 
-                                                # Сортируем атрибуты как в HTML версии
-                                                def sort_attrs(item):
-                                                    attr_name, attr_value = item
-                                                    if '-priority' in attr_name:
-                                                        priority = int(attr_value)
-                                                        return (priority, 1)
-                                                    elif '-src' in attr_name:
-                                                        format_name = attr_name.replace('data-', '').replace('-src', '')
-                                                        priority_key = f'data-{format_name}-priority'
-                                                        priority = int(data_attrs.get(priority_key, '999'))
-                                                        return (priority, 0)
-                                                    else:
-                                                        return (0, 2)
-                                                
-                                                sorted_attrs = sorted(data_attrs.items(), key=sort_attrs)
-                                                
                                                 # Добавляем атрибуты с правильными отступами
-                                                attrs_to_add = []
-                                                for attr_name, attr_value in sorted_attrs:
+                                                attrs_lines = []
+                                                for attr_name, attr_value in attrs_to_add:
                                                     # Используем прямые слэши для всех путей
                                                     attr_value_fixed = str(attr_value).replace('\\', '/')
-                                                    attrs_to_add.append(f'{attr_indent}{attr_name}="{attr_value_fixed}"')
+                                                    attrs_lines.append(f'{attr_indent}{attr_name}="{attr_value_fixed}"')
                                                 
                                                 # Добавляем закрывающую скобку с правильным отступом
-                                                attrs_to_add.append(f'{attr_indent})')
+                                                attrs_lines.append(f'{attr_indent})')
                                                 
                                                 # Заменяем последнюю строку блока на строку без скобки
                                                 # и добавляем все атрибуты
-                                                img_block_lines = img_block_lines[:k+1] + attrs_to_add
+                                                img_block_lines = img_block_lines[:k+1] + attrs_lines
                                                 break
                                     
                                     print(f"  ✅ Обновлен Pug блок")
@@ -422,7 +521,7 @@ class ImageOptimizer:
                 if not variants:
                     return match.group(0)
                 
-                optimal_info = self.get_optimal_image_info(variants)
+                optimal_info = self.get_optimal_image_info(variants, image_path)
                 if not optimal_info:
                     return match.group(0)
                 
@@ -459,10 +558,10 @@ class ImageOptimizer:
         
         return False
 
-    def get_user_choice(self) -> List[str]:
-        """Показывает меню и возвращает список расширений для обработки."""
+    def get_file_type_choice(self) -> List[str]:
+        """Показывает меню выбора типов файлов и возвращает список расширений для обработки."""
         print("\n" + "="*60)
-        print("🎯 МЕНЮ ВЫБОРА РЕЖИМА ОБРАБОТКИ")
+        print("🎯 МЕНЮ ВЫБОРА ТИПОВ ФАЙЛОВ")
         print("="*60)
         print("1. Обработать все файлы (pug, scss, html, css, php)")
         print("2. Только препроцессоры (pug, scss)")
@@ -516,15 +615,57 @@ class ImageOptimizer:
                 print("\n❌ Операция прервана пользователем")
                 sys.exit(0)
 
+    def get_save_mode_choice(self) -> str:
+        """Показывает меню выбора способа сохранения информации об изображениях."""
+        print("\n" + "="*60)
+        print("💾 МЕНЮ ВЫБОРА СПОСОБА СОХРАНЕНИЯ ИНФОРМАЦИИ")
+        print("="*60)
+        print("1. В data-атрибутах (традиционный способ)")
+        print("2. В JSON-файле с хэш-функцией (dev/assets/img/images_data.json)")
+        print("3. Оба способа (data-атрибуты + JSON)")
+        print("="*60)
+        print("ℹ️  JSON-файл позволяет легко находить информацию об изображениях")
+        print("   через JavaScript используя хэш пути к изображению")
+        print("="*60)
+        
+        while True:
+            try:
+                choice = input("Выберите способ сохранения (1-3): ").strip()
+                
+                if choice == '1':
+                    return 'data_attributes'
+                elif choice == '2':
+                    return 'json'
+                elif choice == '3':
+                    return 'both'
+                else:
+                    print("❌ Неверный выбор! Введите 1, 2 или 3")
+                    continue
+                    
+            except KeyboardInterrupt:
+                print("\n❌ Операция прервана пользователем")
+                sys.exit(0)
+
     def run(self):
         """Запускает процесс оптимизации."""
         print("🚀 Скрипт оптимизации изображений")
         print(f"📁 Корневая папка проекта: {self.project_root}")
         
-        # Получаем выбор пользователя
-        selected_extensions = self.get_user_choice()
+        # Получаем выбор пользователя по типам файлов
+        selected_extensions = self.get_file_type_choice()
+        
+        # Получаем выбор способа сохранения информации
+        self.save_mode = self.get_save_mode_choice()
         
         print(f"\n🎯 Выбранные расширения: {', '.join(selected_extensions)}")
+        print(f"💾 Режим сохранения: {self.save_mode}")
+        
+        if self.save_mode == 'data_attributes':
+            print("   → Информация будет сохранена в data-атрибутах")
+        elif self.save_mode == 'json':
+            print("   → Информация будет сохранена в JSON-файле")
+        else:  # both
+            print("   → Информация будет сохранена в data-атрибутах И JSON-файле")
         
         # Находим все файлы для обработки в папке dev
         dev_folder = self.project_root / 'dev'
@@ -544,6 +685,9 @@ class ImageOptimizer:
         print(f"📄 Найдено файлов для обработки: {len(files_to_process)}")
         print("="*60)
         
+        # Очищаем данные изображений перед началом обработки
+        self.images_data = {}
+        
         updated_files = 0
         for file_path in files_to_process:
             if self.process_file(file_path):
@@ -552,8 +696,32 @@ class ImageOptimizer:
             else:
                 print(f"⚪ Без изменений: {file_path.relative_to(self.project_root / 'dev')}")
         
+        # Сохраняем JSON файл если нужно
+        if self.should_save_json():
+            self.save_images_json()
+        
         print("="*60)
         print(f"✨ Завершено! Обновлено файлов: {updated_files} из {len(files_to_process)}")
+        
+        if self.should_save_json():
+            print(f"📄 JSON файл сохранен в: dev/assets/img/images_data.json")
+            print("💡 Пример использования в JavaScript:")
+            print("""
+// Загружаем данные изображений
+const imagesData = await fetch('/assets/img/images_data.json').then(r => r.json());
+
+// Функция для получения хэша пути
+function getImageHash(imagePath) {
+    return CryptoJS.MD5(imagePath.replace(/^\.\//, '').replace(/\\\\/g, '/')).toString();
+}
+
+// Получаем информацию об изображении
+const imageInfo = imagesData[getImageHash('assets/img/example.jpg')];
+if (imageInfo) {
+    console.log('Оптимальный путь:', imageInfo.optimal_src);
+    console.log('Все форматы:', imageInfo.formats);
+}
+            """)
 
 
 def main():
