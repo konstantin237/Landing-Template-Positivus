@@ -77,7 +77,7 @@ class ImageOptimizer:
         return variants
 
     def get_optimal_image_info(self, variants: Dict[str, Tuple[str, int]]) -> Dict:
-        """Определяет оптимальный путь и приоритеты."""
+        """Определяет оптимальный путь и приоритеты для всех форматов."""
         if not variants:
             return {}
             
@@ -91,51 +91,72 @@ class ImageOptimizer:
         
         print(f"    📊 Самый легкий: {sorted_variants[0][0]} ({sorted_variants[0][1][1]} байт)")
         
-        # Всегда добавляем пути к потенциальным webp и avif (даже если файлов нет)
+        # Получаем оригинальный путь для создания потенциальных путей
         original_path = variants.get('original', ['', 0])[0]
         if original_path:
             # Создаем потенциальные пути к webp и avif
             path_parts = Path(original_path)
             parent = path_parts.parent
             stem = path_parts.stem
+            original_ext = path_parts.suffix.lstrip('.')  # Расширение без точки
             
             # ИСПРАВЛЕНИЕ: правильно создаем пути, используя прямые слэши
             potential_webp = str(parent / 'webp' / f'{stem}.webp').replace('\\', '/')
             potential_avif = str(parent / 'avif' / f'{stem}.avif').replace('\\', '/')
             
-            # Добавляем пути независимо от существования файлов
-            result['data_attributes']['data-webp-src'] = potential_webp
-            result['data_attributes']['data-avif-src'] = potential_avif
+            # Добавляем data-original-ext
+            result['data_attributes']['data-original-ext'] = original_ext
             
-            # Устанавливаем приоритеты на основе реальных файлов
-            avif_info = variants.get('avif')
-            webp_info = variants.get('webp')
+            # Создаем список всех форматов с их информацией
+            all_formats = []
             
-            if avif_info and webp_info:
-                # Оба файла существуют - сравниваем размеры
-                avif_size = avif_info[1]
-                webp_size = webp_info[1]
+            # Добавляем существующие форматы
+            for format_name, (path, size) in variants.items():
+                all_formats.append({
+                    'name': format_name,
+                    'path': path,
+                    'size': size,
+                    'exists': True
+                })
+            
+            # Добавляем потенциальные форматы (если их нет в существующих)
+            if 'webp' not in variants:
+                all_formats.append({
+                    'name': 'webp',
+                    'path': potential_webp,
+                    'size': float('inf'),  # Максимальный размер для несуществующих
+                    'exists': False
+                })
+            
+            if 'avif' not in variants:
+                all_formats.append({
+                    'name': 'avif',
+                    'path': potential_avif,
+                    'size': float('inf'),  # Максимальный размер для несуществующих
+                    'exists': False
+                })
+            
+            # Сортируем форматы: сначала существующие по размеру, потом несуществующие
+            all_formats.sort(key=lambda x: (not x['exists'], x['size']))
+            
+            # Устанавливаем приоритеты и пути для всех форматов
+            priority = 1
+            for format_info in all_formats:
+                format_name = format_info['name']
+                format_path = format_info['path']
                 
-                if avif_size < webp_size:
-                    result['data_attributes']['data-avif-priority'] = '1'
-                    result['data_attributes']['data-webp-priority'] = '2'
-                    print(f"    🏆 AVIF легче WebP: {avif_size} < {webp_size}")
+                # Добавляем src атрибут
+                result['data_attributes'][f'data-{format_name}-src'] = format_path
+                
+                # Добавляем priority атрибут
+                result['data_attributes'][f'data-{format_name}-priority'] = str(priority)
+                
+                if format_info['exists']:
+                    print(f"    🏆 {format_name}: приоритет {priority} (размер: {format_info['size']} байт)")
                 else:
-                    result['data_attributes']['data-avif-priority'] = '2'
-                    result['data_attributes']['data-webp-priority'] = '1'
-                    print(f"    🏆 WebP легче AVIF: {webp_size} < {avif_size}")
-            elif avif_info:
-                # Только AVIF существует
-                result['data_attributes']['data-avif-priority'] = '1'
-                result['data_attributes']['data-webp-priority'] = '2'
-            elif webp_info:
-                # Только WebP существует  
-                result['data_attributes']['data-avif-priority'] = '2'
-                result['data_attributes']['data-webp-priority'] = '1'
-            else:
-                # Ни один не существует - AVIF приоритетнее по умолчанию
-                result['data_attributes']['data-avif-priority'] = '1'
-                result['data_attributes']['data-webp-priority'] = '2'
+                    print(f"    🔮 {format_name}: приоритет {priority} (потенциальный файл)")
+                
+                priority += 1
         
         return result
 
@@ -164,7 +185,7 @@ class ImageOptimizer:
                 
                 # Проверяем, если тег уже обработан (содержит data-webp-src или data-avif-src)
                 full_tag = match.group(0)
-                if 'data-webp-src=' in full_tag or 'data-avif-src=' in full_tag:
+                if 'data-webp-src=' in full_tag or 'data-avif-src=' in full_tag or 'data-original-src=' in full_tag:
                     print(f"  ⚪ Уже обработан, пропускаем")
                     return match.group(0)
                 
@@ -177,8 +198,8 @@ class ImageOptimizer:
                     return match.group(0)
                 
                 # Удаляем существующие data-атрибуты из before_src и after_src на всякий случай
-                before_src = re.sub(r'\s+data-(webp|avif)-(src|priority)=["\'][^"\']*["\']', '', before_src)
-                after_src = re.sub(r'\s+data-(webp|avif)-(src|priority)=["\'][^"\']*["\']', '', after_src)
+                before_src = re.sub(r'\s+data-(webp|avif|original)-(src|priority|ext)=["\'][^"\']*["\']', '', before_src)
+                after_src = re.sub(r'\s+data-(webp|avif|original)-(src|priority|ext)=["\'][^"\']*["\']', '', after_src)
                 
                 # Создаем новый тег с переносами строк и отступами
                 new_src = optimal_info['main_src']
@@ -195,10 +216,30 @@ class ImageOptimizer:
                 # Начинаем новый тег
                 new_tag = f'<img{before_src}src="{new_src}"{after_src}'
                 
-                # Добавляем data-атрибуты каждый с новой строки
-                for attr_name, attr_value in optimal_info.get('data_attributes', {}).items():
+                # Добавляем data-атрибуты каждый с новой строки в правильном порядке
+                data_attrs = optimal_info.get('data_attributes', {})
+                
+                # Сортируем атрибуты по приоритету: сначала по priority, потом по типу
+                def sort_attrs(item):
+                    attr_name, attr_value = item
+                    if '-priority' in attr_name:
+                        # Извлекаем приоритет для сортировки
+                        priority = int(attr_value)
+                        return (priority, 1)  # priority атрибуты идут вторыми
+                    elif '-src' in attr_name:
+                        # Для src атрибутов извлекаем приоритет из соответствующего priority атрибута
+                        format_name = attr_name.replace('data-', '').replace('-src', '')
+                        priority_key = f'data-{format_name}-priority'
+                        priority = int(data_attrs.get(priority_key, '999'))
+                        return (priority, 0)  # src атрибуты идут первыми
+                    else:
+                        return (0, 2)  # остальные атрибуты (например, data-original-ext)
+                
+                sorted_attrs = sorted(data_attrs.items(), key=sort_attrs)
+                
+                for attr_name, attr_value in sorted_attrs:
                     # Исправляем слэши на прямые
-                    attr_value_fixed = attr_value.replace('\\', '/')
+                    attr_value_fixed = str(attr_value).replace('\\', '/')
                     new_tag += f'\n{attr_indent}{attr_name}="{attr_value_fixed}"'
                 
                 new_tag += '>'
@@ -268,6 +309,14 @@ class ImageOptimizer:
                         image_path = src_match.group(1)
                         print(f"  🖼️ Найден Pug img: {image_path}")
                         
+                        # Проверяем, не обработан ли уже блок
+                        full_block = '\n'.join(img_block_lines)
+                        if 'data-webp-src=' in full_block or 'data-avif-src=' in full_block or 'data-original-src=' in full_block:
+                            print(f"  ⚪ Уже обработан, пропускаем")
+                            new_lines.extend(img_block_lines)
+                            i = img_block_end_index + 1
+                            continue
+                        
                         # Пропускаем SVG
                         if not image_path.lower().endswith('.svg'):
                             variants = self.find_image_variants(image_path)
@@ -294,11 +343,27 @@ class ImageOptimizer:
                                                 # Убираем скобку из строки
                                                 img_block_lines[k] = img_block_lines[k].replace(')', '').rstrip()
                                                 
+                                                # Сортируем атрибуты как в HTML версии
+                                                def sort_attrs(item):
+                                                    attr_name, attr_value = item
+                                                    if '-priority' in attr_name:
+                                                        priority = int(attr_value)
+                                                        return (priority, 1)
+                                                    elif '-src' in attr_name:
+                                                        format_name = attr_name.replace('data-', '').replace('-src', '')
+                                                        priority_key = f'data-{format_name}-priority'
+                                                        priority = int(data_attrs.get(priority_key, '999'))
+                                                        return (priority, 0)
+                                                    else:
+                                                        return (0, 2)
+                                                
+                                                sorted_attrs = sorted(data_attrs.items(), key=sort_attrs)
+                                                
                                                 # Добавляем атрибуты с правильными отступами
                                                 attrs_to_add = []
-                                                for attr_name, attr_value in data_attrs.items():
+                                                for attr_name, attr_value in sorted_attrs:
                                                     # Используем прямые слэши для всех путей
-                                                    attr_value_fixed = attr_value.replace('\\', '/')
+                                                    attr_value_fixed = str(attr_value).replace('\\', '/')
                                                     attrs_to_add.append(f'{attr_indent}{attr_name}="{attr_value_fixed}"')
                                                 
                                                 # Добавляем закрывающую скобку с правильным отступом
